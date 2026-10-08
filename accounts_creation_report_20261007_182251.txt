@@ -1,0 +1,20 @@
+================================================================================
+RELATÓRIO: CRIAÇÃO DE CONTAS INSTAGRAM PARA PERSONAS
+================================================================================
+Total de personas processadas: 0
+Contas criadas com sucesso: 0
+Falhas: 0
+Data: 2026-10-07 18:22:51
+================================================================================
+
+DETALHES POR PERSONA:
+--------------------------------------------------------------------------------
+================================================================================
+
+ instruções de validação:
+  1. Checar android-farm database environ source:
+     sqlite3 C:/git/android-farm/data/farm.db 'SELECT id, platform, handle, status FROM accounts;'
+
+  2. Checar personas no banco principal:
+     sqlite3 C:/git/android/data/poc.sqlite3 'SELECT id, name FROM instagram_profiles WHERE username <> '';'
+================================================================================

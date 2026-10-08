@@ -1,0 +1,65 @@
+================================================================================
+RELATÓRIO: CRIAÇÃO DE CONTAS INSTAGRAM PARA PERSONAS
+================================================================================
+Total de personas processadas: 11
+Contas criadas com sucesso: 0
+Contas já existentes (puladas): 11
+Falhas: 0
+Data: 2026-10-07 20:00:06
+================================================================================
+
+DETALHES POR PERSONA:
+--------------------------------------------------------------------------------
+Persona 1 (ID: persona-jK7q7X9O-Y3PGRMk):
+  Status: SKIPPED
+  Mensagem: Persona already has an active account
+
+Persona 2 (ID: persona-9Nn_cphUfDJMuQMN):
+  Status: SKIPPED
+  Mensagem: Persona already has an active account
+
+Persona 3 (ID: persona-39fRNSFlEtmOTCkv):
+  Status: SKIPPED
+  Mensagem: Persona already has an active account
+
+Persona 4 (ID: persona-d4h6m3l4uBUaBWak):
+  Status: SKIPPED
+  Mensagem: Persona already has an active account
+
+Persona 5 (ID: persona-pU4t0QScrO03kLA_):
+  Status: SKIPPED
+  Mensagem: Persona already has an active account
+
+Persona 6 (ID: persona-Qud6TL9ZehJggYAT):
+  Status: SKIPPED
+  Mensagem: Persona already has an active account
+
+Persona 7 (ID: persona-O_bYrgUNRLBiH5F7):
+  Status: SKIPPED
+  Mensagem: Persona already has an active account
+
+Persona 8 (ID: persona-uVkCyLm11vGlPmPO):
+  Status: SKIPPED
+  Mensagem: Persona already has an active account
+
+Persona 9 (ID: persona-Epoe4NdI9wmJw29C):
+  Status: SKIPPED
+  Mensagem: Persona already has an active account
+
+Persona 10 (ID: persona-etWFyKlQIgQJO5pn):
+  Status: SKIPPED
+  Mensagem: Persona already has an active account
+
+Persona 11 (ID: persona-jRtzUzw3aV9gTEj4):
+  Status: SKIPPED
+  Mensagem: Persona already has an active account
+
+================================================================================
+
+ instruções de validação:
+  1. Checar android-farm database environ source:
+     sqlite3 C:/git/android-farm/data/farm.db 'SELECT id, platform, handle, status FROM accounts;'
+
+  2. Checar personas no banco principal:
+     sqlite3 C:/git/android/data/poc.sqlite3 'SELECT id, name FROM instagram_profiles WHERE username <> '';'
+================================================================================

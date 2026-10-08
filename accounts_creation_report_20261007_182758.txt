@@ -1,0 +1,64 @@
+================================================================================
+RELATÓRIO: CRIAÇÃO DE CONTAS INSTAGRAM PARA PERSONAS
+================================================================================
+Total de personas processadas: 11
+Contas criadas com sucesso: 0
+Falhas: 11
+Data: 2026-10-07 18:27:58
+================================================================================
+
+DETALHES POR PERSONA:
+--------------------------------------------------------------------------------
+Persona 1 (ID: persona-jK7q7X9O-Y3PGRMk):
+  Status: FAILED
+  Mensagem: API error: 422
+
+Persona 2 (ID: persona-9Nn_cphUfDJMuQMN):
+  Status: FAILED
+  Mensagem: API error: 422
+
+Persona 3 (ID: persona-39fRNSFlEtmOTCkv):
+  Status: FAILED
+  Mensagem: API error: 422
+
+Persona 4 (ID: persona-d4h6m3l4uBUaBWak):
+  Status: FAILED
+  Mensagem: API error: 422
+
+Persona 5 (ID: persona-pU4t0QScrO03kLA_):
+  Status: FAILED
+  Mensagem: API error: 422
+
+Persona 6 (ID: persona-Qud6TL9ZehJggYAT):
+  Status: FAILED
+  Mensagem: API error: 422
+
+Persona 7 (ID: persona-O_bYrgUNRLBiH5F7):
+  Status: FAILED
+  Mensagem: API error: 422
+
+Persona 8 (ID: persona-uVkCyLm11vGlPmPO):
+  Status: FAILED
+  Mensagem: API error: 422
+
+Persona 9 (ID: persona-Epoe4NdI9wmJw29C):
+  Status: FAILED
+  Mensagem: API error: 422
+
+Persona 10 (ID: persona-etWFyKlQIgQJO5pn):
+  Status: FAILED
+  Mensagem: API error: 422
+
+Persona 11 (ID: persona-jRtzUzw3aV9gTEj4):
+  Status: FAILED
+  Mensagem: API error: 422
+
+================================================================================
+
+ instruções de validação:
+  1. Checar android-farm database environ source:
+     sqlite3 C:/git/android-farm/data/farm.db 'SELECT id, platform, handle, status FROM accounts;'
+
+  2. Checar personas no banco principal:
+     sqlite3 C:/git/android/data/poc.sqlite3 'SELECT id, name FROM instagram_profiles WHERE username <> '';'
+================================================================================

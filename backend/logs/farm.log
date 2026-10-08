@@ -1,0 +1,692 @@
+2026-10-07 18:19:57,364 - app.main - INFO - Starting android-farm
+2026-10-07 18:19:57,472 - app.db - INFO - Database initialized with URL: sqlite:///./data/farm.db
+2026-10-07 18:19:57,491 - app.db - INFO - Platform configs seeded
+2026-10-07 18:19:57,492 - app.security.secret_store - INFO - New secret store key created at ./data/secret.key
+2026-10-07 18:19:57,492 - app.security.secret_store - INFO - Secret store initialized
+2026-10-07 18:19:57,492 - app.modules.proxies.domain.proxy - INFO - Proxy manager initialized
+2026-10-07 18:19:57,492 - app.modules.browsers.domain.browser_profile - INFO - Browser manager initialized
+2026-10-07 18:19:57,492 - app.main - INFO - android-farm initialized successfully
+2026-10-07 18:48:28,799 - app.main - INFO - Starting android-farm
+2026-10-07 18:48:28,828 - app.db - INFO - Database initialized with URL: sqlite:///./data/farm.db
+2026-10-07 18:48:28,843 - app.db - INFO - Platform configs seeded
+2026-10-07 18:48:28,856 - app.security.secret_store - INFO - Secret store loaded key from ./data/secret.key
+2026-10-07 18:48:28,857 - app.security.secret_store - INFO - Secret store initialized
+2026-10-07 18:48:28,857 - app.modules.proxies.domain.proxy - INFO - Proxy manager initialized
+2026-10-07 18:48:28,857 - app.modules.browsers.domain.browser_profile - INFO - Browser manager initialized
+2026-10-07 18:48:28,857 - app.main - INFO - android-farm initialized successfully
+2026-10-07 18:52:15,547 - app.main - INFO - Starting android-farm
+2026-10-07 18:52:15,571 - app.db - INFO - Database initialized with URL: sqlite:///./data/farm.db
+2026-10-07 18:52:15,585 - app.db - INFO - Platform configs seeded
+2026-10-07 18:52:15,586 - app.security.secret_store - INFO - Secret store loaded key from ./data/secret.key
+2026-10-07 18:52:15,586 - app.security.secret_store - INFO - Secret store initialized
+2026-10-07 18:52:15,586 - app.modules.proxies.domain.proxy - INFO - Proxy manager initialized
+2026-10-07 18:52:15,586 - app.modules.browsers.domain.browser_profile - INFO - Browser manager initialized
+2026-10-07 18:52:15,586 - app.main - INFO - android-farm initialized successfully
+2026-10-07 18:54:47,283 - app.main - INFO - Starting android-farm
+2026-10-07 18:54:47,312 - app.db - INFO - Database initialized with URL: sqlite:///./data/farm.db
+2026-10-07 18:54:47,330 - app.db - INFO - Platform configs seeded
+2026-10-07 18:54:47,331 - app.security.secret_store - INFO - Secret store loaded key from ./data/secret.key
+2026-10-07 18:54:47,332 - app.security.secret_store - INFO - Secret store initialized
+2026-10-07 18:54:47,332 - app.modules.proxies.domain.proxy - INFO - Proxy manager initialized
+2026-10-07 18:54:47,332 - app.modules.browsers.domain.browser_profile - INFO - Browser manager initialized
+2026-10-07 18:54:47,332 - app.main - INFO - android-farm initialized successfully
+2026-10-07 18:54:55,451 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 18:54:55,473 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 18:54:57,249 - app.modules.browsers.domain.browser_profile - INFO - Browser playwright started
+2026-10-07 18:54:58,021 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:54:58,021 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:55:13,972 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 18:55:13,991 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 18:55:14,090 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:55:14,090 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:55:24,625 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 18:55:24,639 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 18:55:24,733 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:55:24,734 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:55:35,274 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 18:55:35,292 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 18:55:35,389 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:55:35,389 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:55:45,923 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 18:55:45,935 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 18:55:46,010 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:55:46,010 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:55:56,543 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 18:55:56,558 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 18:55:56,633 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:55:56,633 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:56:07,174 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 18:56:07,189 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 18:56:07,248 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:56:07,248 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:56:17,784 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 18:56:17,795 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 18:56:17,859 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:56:17,859 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:56:28,397 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 18:56:28,409 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 18:56:28,491 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:56:28,491 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:56:39,025 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 18:56:39,036 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 18:56:39,097 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:56:39,097 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:56:49,632 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 18:56:49,645 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 18:56:49,712 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:56:49,712 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:57:00,251 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 18:57:00,265 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 18:57:00,347 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:57:00,348 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:57:18,437 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 18:57:18,448 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 18:57:18,519 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:57:18,519 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:57:29,061 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 18:57:29,072 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 18:57:29,135 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:57:29,135 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:57:39,676 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 18:57:39,688 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 18:57:39,758 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:57:39,758 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:57:50,293 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 18:57:50,309 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 18:57:50,402 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:57:50,402 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:58:00,941 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 18:58:00,953 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 18:58:01,023 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:58:01,024 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:58:11,570 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 18:58:11,583 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 18:58:11,650 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:58:11,650 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:58:22,183 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 18:58:22,197 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 18:58:22,266 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:58:22,266 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:58:32,795 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 18:58:32,811 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 18:58:32,883 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:58:32,883 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:58:43,419 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 18:58:43,430 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 18:58:43,508 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:58:43,508 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:58:54,046 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 18:58:54,057 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 18:58:54,127 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:58:54,127 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:59:04,664 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 18:59:04,678 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 18:59:04,760 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 18:59:04,760 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: Browser.new_context() got an unexpected keyword argument 'ignore_default_args'
+2026-10-07 19:05:36,314 - app.main - INFO - Starting android-farm
+2026-10-07 19:05:36,330 - app.db - INFO - Database initialized with URL: sqlite:///./data/farm.db
+2026-10-07 19:05:36,342 - app.db - INFO - Platform configs seeded
+2026-10-07 19:05:36,343 - app.security.secret_store - INFO - Secret store loaded key from ./data/secret.key
+2026-10-07 19:05:36,343 - app.security.secret_store - INFO - Secret store initialized
+2026-10-07 19:05:36,343 - app.modules.proxies.domain.proxy - INFO - Proxy manager initialized
+2026-10-07 19:05:36,343 - app.modules.browsers.domain.browser_profile - INFO - Browser manager initialized
+2026-10-07 19:05:36,343 - app.main - INFO - android-farm initialized successfully
+2026-10-07 19:05:51,301 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:05:51,316 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:05:51,656 - app.modules.browsers.domain.browser_profile - INFO - Browser playwright started
+2026-10-07 19:05:51,750 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: [Errno 2] No such file or directory: './data/fingerprint_7059-1791410751.656786.json'
+2026-10-07 19:05:51,750 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: [Errno 2] No such file or directory: './data/fingerprint_7059-1791410751.656786.json'
+2026-10-07 19:06:02,291 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:06:02,302 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:06:02,375 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: [Errno 2] No such file or directory: './data/fingerprint_2412-1791410762.302788.json'
+2026-10-07 19:06:02,376 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: [Errno 2] No such file or directory: './data/fingerprint_2412-1791410762.302788.json'
+2026-10-07 19:06:12,913 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:06:12,924 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:06:13,003 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: [Errno 2] No such file or directory: './data/fingerprint_1863-1791410772.924687.json'
+2026-10-07 19:06:13,003 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: [Errno 2] No such file or directory: './data/fingerprint_1863-1791410772.924687.json'
+2026-10-07 19:06:23,535 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:06:23,547 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:06:23,637 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: [Errno 2] No such file or directory: './data/fingerprint_5687-1791410783.547453.json'
+2026-10-07 19:06:23,637 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: [Errno 2] No such file or directory: './data/fingerprint_5687-1791410783.547453.json'
+2026-10-07 19:06:34,176 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:06:34,188 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:06:34,258 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: [Errno 2] No such file or directory: './data/fingerprint_9294-1791410794.188315.json'
+2026-10-07 19:06:34,258 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: [Errno 2] No such file or directory: './data/fingerprint_9294-1791410794.188315.json'
+2026-10-07 19:06:44,793 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:06:44,805 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:06:44,890 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: [Errno 2] No such file or directory: './data/fingerprint_4879-1791410804.806172.json'
+2026-10-07 19:06:44,891 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: [Errno 2] No such file or directory: './data/fingerprint_4879-1791410804.806172.json'
+2026-10-07 19:06:55,424 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:06:55,439 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:06:55,519 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: [Errno 2] No such file or directory: './data/fingerprint_2356-1791410815.439862.json'
+2026-10-07 19:06:55,519 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: [Errno 2] No such file or directory: './data/fingerprint_2356-1791410815.439862.json'
+2026-10-07 19:07:06,056 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:07:06,072 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:07:06,159 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: [Errno 2] No such file or directory: './data/fingerprint_7315-1791410826.07251.json'
+2026-10-07 19:07:06,159 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: [Errno 2] No such file or directory: './data/fingerprint_7315-1791410826.07251.json'
+2026-10-07 19:07:16,708 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:07:16,721 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:07:16,796 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: [Errno 2] No such file or directory: './data/fingerprint_5630-1791410836.721239.json'
+2026-10-07 19:07:16,796 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: [Errno 2] No such file or directory: './data/fingerprint_5630-1791410836.721239.json'
+2026-10-07 19:07:27,382 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:07:27,393 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:07:27,472 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: [Errno 2] No such file or directory: './data/fingerprint_7474-1791410847.394011.json'
+2026-10-07 19:07:27,472 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: [Errno 2] No such file or directory: './data/fingerprint_7474-1791410847.394011.json'
+2026-10-07 19:07:38,021 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:07:38,033 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:07:38,109 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: [Errno 2] No such file or directory: './data/fingerprint_9627-1791410858.0337.json'
+2026-10-07 19:07:38,110 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: [Errno 2] No such file or directory: './data/fingerprint_9627-1791410858.0337.json'
+2026-10-07 19:08:38,355 - app.main - INFO - Starting android-farm
+2026-10-07 19:08:38,382 - app.db - INFO - Database initialized with URL: sqlite:///./data/farm.db
+2026-10-07 19:08:38,399 - app.db - INFO - Platform configs seeded
+2026-10-07 19:08:38,399 - app.security.secret_store - INFO - Secret store loaded key from ./data/secret.key
+2026-10-07 19:08:38,399 - app.security.secret_store - INFO - Secret store initialized
+2026-10-07 19:08:38,400 - app.modules.proxies.domain.proxy - INFO - Proxy manager initialized
+2026-10-07 19:08:38,400 - app.modules.browsers.domain.browser_profile - INFO - Browser manager initialized
+2026-10-07 19:08:38,400 - app.main - INFO - android-farm initialized successfully
+2026-10-07 19:08:53,038 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:08:53,057 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:08:53,694 - app.modules.browsers.domain.browser_profile - INFO - Browser playwright started
+2026-10-07 19:09:16,948 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: AccountResult.__init__() got an unexpected keyword argument 'verified'
+2026-10-07 19:09:16,948 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: AccountResult.__init__() got an unexpected keyword argument 'verified'
+2026-10-07 19:09:27,479 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:09:27,491 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:09:48,485 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: AccountResult.__init__() got an unexpected keyword argument 'verified'
+2026-10-07 19:09:48,485 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: AccountResult.__init__() got an unexpected keyword argument 'verified'
+2026-10-07 19:09:59,013 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:09:59,025 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:10:18,119 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: AccountResult.__init__() got an unexpected keyword argument 'verified'
+2026-10-07 19:10:18,119 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: AccountResult.__init__() got an unexpected keyword argument 'verified'
+2026-10-07 19:10:28,644 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:10:28,656 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:10:47,930 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: AccountResult.__init__() got an unexpected keyword argument 'verified'
+2026-10-07 19:10:47,930 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: AccountResult.__init__() got an unexpected keyword argument 'verified'
+2026-10-07 19:10:58,457 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:10:58,469 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:11:17,890 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: AccountResult.__init__() got an unexpected keyword argument 'verified'
+2026-10-07 19:11:17,890 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: AccountResult.__init__() got an unexpected keyword argument 'verified'
+2026-10-07 19:11:28,415 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:11:28,428 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:11:47,561 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: AccountResult.__init__() got an unexpected keyword argument 'verified'
+2026-10-07 19:11:47,562 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: AccountResult.__init__() got an unexpected keyword argument 'verified'
+2026-10-07 19:11:58,087 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:11:58,100 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:12:18,046 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: AccountResult.__init__() got an unexpected keyword argument 'verified'
+2026-10-07 19:12:18,046 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: AccountResult.__init__() got an unexpected keyword argument 'verified'
+2026-10-07 19:12:28,571 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:12:28,586 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:12:47,804 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: AccountResult.__init__() got an unexpected keyword argument 'verified'
+2026-10-07 19:12:47,804 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: AccountResult.__init__() got an unexpected keyword argument 'verified'
+2026-10-07 19:12:58,330 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:12:58,384 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:13:15,889 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: AccountResult.__init__() got an unexpected keyword argument 'verified'
+2026-10-07 19:13:15,890 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: AccountResult.__init__() got an unexpected keyword argument 'verified'
+2026-10-07 19:13:26,415 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:13:26,428 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:13:48,437 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: AccountResult.__init__() got an unexpected keyword argument 'verified'
+2026-10-07 19:13:48,438 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: AccountResult.__init__() got an unexpected keyword argument 'verified'
+2026-10-07 19:13:58,963 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:13:58,974 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:14:17,031 - app.modules.accounts.platforms.instagram.provider - ERROR - Failed to create Instagram account: AccountResult.__init__() got an unexpected keyword argument 'verified'
+2026-10-07 19:14:17,032 - app.modules.accounts.application.account_service - ERROR - Account creation failed for instagram: AccountResult.__init__() got an unexpected keyword argument 'verified'
+2026-10-07 19:15:29,967 - app.main - INFO - Starting android-farm
+2026-10-07 19:15:29,982 - app.db - INFO - Database initialized with URL: sqlite:///./data/farm.db
+2026-10-07 19:15:29,994 - app.db - INFO - Platform configs seeded
+2026-10-07 19:15:29,994 - app.security.secret_store - INFO - Secret store loaded key from ./data/secret.key
+2026-10-07 19:15:29,994 - app.security.secret_store - INFO - Secret store initialized
+2026-10-07 19:15:29,994 - app.modules.proxies.domain.proxy - INFO - Proxy manager initialized
+2026-10-07 19:15:29,994 - app.modules.browsers.domain.browser_profile - INFO - Browser manager initialized
+2026-10-07 19:15:29,994 - app.main - INFO - android-farm initialized successfully
+2026-10-07 19:15:44,518 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:15:44,532 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:15:44,872 - app.modules.browsers.domain.browser_profile - INFO - Browser playwright started
+2026-10-07 19:16:05,809 - app.modules.accounts.application.account_service - INFO - Account creation successful for instagram: marcos vinícius.leal825@gmail.com
+2026-10-07 19:16:16,337 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:16:16,349 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:16:37,461 - app.modules.accounts.application.account_service - INFO - Account creation successful for instagram: helena.barbosa299@outlook.com
+2026-10-07 19:16:47,983 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:16:47,997 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:17:07,592 - app.modules.accounts.application.account_service - INFO - Account creation successful for instagram: diego.salles567@gmail.com
+2026-10-07 19:17:18,170 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:17:18,186 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:17:35,938 - app.modules.accounts.application.account_service - INFO - Account creation successful for instagram: larissa.fontes438@gmail.com
+2026-10-07 19:17:46,462 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:17:46,481 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:18:04,949 - app.modules.accounts.application.account_service - INFO - Account creation successful for instagram: rafael.pires712@gmail.com
+2026-10-07 19:18:15,474 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:18:15,492 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:18:33,939 - app.modules.accounts.application.account_service - INFO - Account creation successful for instagram: camila.duarte975@outlook.com
+2026-10-07 19:18:44,463 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:18:44,474 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:19:02,730 - app.modules.accounts.application.account_service - INFO - Account creation successful for instagram: thiago.moreira244@gmail.com
+2026-10-07 19:19:13,255 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:19:13,271 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:19:31,659 - app.modules.accounts.application.account_service - INFO - Account creation successful for instagram: beatriz.rocha828@gmail.com
+2026-10-07 19:19:42,186 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:19:42,200 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:20:01,054 - app.modules.accounts.application.account_service - INFO - Account creation successful for instagram: juliana.mendes931@yahoo.com
+2026-10-07 19:20:11,577 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:20:11,606 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:20:29,617 - app.modules.accounts.application.account_service - INFO - Account creation successful for instagram: felipe.nogueira496@outlook.com
+2026-10-07 19:20:40,136 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 19:20:40,147 - app.modules.accounts.application.account_service - INFO - Creating account for instagram using Playwright provider
+2026-10-07 19:20:59,017 - app.modules.accounts.application.account_service - INFO - Account creation successful for instagram: mariana.costa751@gmail.com
+2026-10-07 19:59:04,537 - app.main - INFO - Starting android-farm
+2026-10-07 19:59:04,551 - app.db - INFO - Database initialized with URL: sqlite:///./data/farm.db
+2026-10-07 19:59:04,559 - app.db - INFO - Platform configs seeded
+2026-10-07 19:59:04,559 - app.security.secret_store - INFO - Secret store loaded key from ./data/secret.key
+2026-10-07 19:59:04,560 - app.security.secret_store - INFO - Secret store initialized
+2026-10-07 19:59:04,560 - app.modules.proxies.domain.proxy - INFO - Proxy manager initialized
+2026-10-07 19:59:04,560 - app.modules.browsers.domain.browser_profile - INFO - Browser manager initialized
+2026-10-07 19:59:04,560 - app.main - INFO - android-farm initialized successfully
+2026-10-07 19:59:27,114 - app.main - INFO - Starting android-farm
+2026-10-07 19:59:27,128 - app.db - INFO - Database initialized with URL: sqlite:///./data/farm.db
+2026-10-07 19:59:27,135 - app.db - INFO - Platform configs seeded
+2026-10-07 19:59:27,136 - app.security.secret_store - INFO - Secret store loaded key from ./data/secret.key
+2026-10-07 19:59:27,136 - app.security.secret_store - INFO - Secret store initialized
+2026-10-07 19:59:27,136 - app.modules.proxies.domain.proxy - INFO - Proxy manager initialized
+2026-10-07 19:59:27,136 - app.modules.browsers.domain.browser_profile - INFO - Browser manager initialized
+2026-10-07 19:59:27,136 - app.main - INFO - android-farm initialized successfully
+2026-10-07 20:01:21,469 - app.modules.accounts.application.account_service - INFO - Deleted account cba336cb-aec4-41d6-a714-c9186f1a6440
+2026-10-07 20:01:21,558 - app.modules.accounts.application.account_service - INFO - Deleted account b5589666-b417-437f-a1bd-b6c3f42f9385
+2026-10-07 20:01:21,583 - app.modules.accounts.application.account_service - INFO - Deleted account 00542e06-be54-49c6-97c8-3087bc57716c
+2026-10-07 20:01:21,608 - app.modules.accounts.application.account_service - INFO - Deleted account a792387a-3616-4d11-b39a-88e405fa4f67
+2026-10-07 20:01:21,633 - app.modules.accounts.application.account_service - INFO - Deleted account f9eb8c1f-ebbf-46d2-b2b5-81892c21f22c
+2026-10-07 20:01:21,664 - app.modules.accounts.application.account_service - INFO - Deleted account ff94fe5e-09d9-4a29-a5f9-6dff327ccf42
+2026-10-07 20:01:21,690 - app.modules.accounts.application.account_service - INFO - Deleted account ea637c69-9f63-4a5c-a094-1dd09dde3d55
+2026-10-07 20:01:21,720 - app.modules.accounts.application.account_service - INFO - Deleted account e8787729-00b0-4c06-b7f4-e00c82533dd3
+2026-10-07 20:01:21,751 - app.modules.accounts.application.account_service - INFO - Deleted account 3d316908-4225-4de9-9659-87c4ad9c1dc3
+2026-10-07 20:01:21,778 - app.modules.accounts.application.account_service - INFO - Deleted account ffdc918b-4853-48a3-9e3b-c6ae7871b1d2
+2026-10-07 20:01:21,804 - app.modules.accounts.application.account_service - INFO - Deleted account 7d78e1dd-f273-4201-b280-a594da71e64f
+2026-10-07 20:01:33,052 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 20:01:33,052 - app.modules.accounts.application.account_service - INFO - Starting full account creation sequence for persona-jK7q7X9O-Y3PGRMk
+2026-10-07 20:01:33,355 - app.modules.browsers.domain.browser_profile - INFO - Browser playwright started
+2026-10-07 20:01:33,596 - app.modules.accounts.platforms.full_signup - INFO - Starting full account creation flow for persona-jK7q7X9O-Y3PGRMk
+2026-10-07 20:02:19,880 - app.modules.accounts.platforms.outlook.signup_flows - ERROR - Outlook signup failed: Timeout 30000ms exceeded.
+2026-10-07 20:02:19,880 - app.modules.accounts.platforms.full_signup - ERROR - Outlook account creation failed: Timeout 30000ms exceeded.
+2026-10-07 20:02:19,880 - app.modules.accounts.platforms.full_signup - ERROR - Failed to create Outlook account
+2026-10-07 20:02:19,908 - app.modules.accounts.application.account_service - ERROR - Full account creation verification failed
+2026-10-07 20:02:19,908 - app.modules.accounts.application.account_service - ERROR - Full account sequence failed: Account verification failed
+Traceback (most recent call last):
+  File "C:\git\android-farm\backend\app\modules\accounts\application\account_service.py", line 196, in _create_full_account_sequence
+    raise Exception("Account verification failed")
+Exception: Account verification failed
+2026-10-07 20:02:19,909 - app.api.accounts - ERROR - Account creation request failed: Account verification failed
+2026-10-07 20:02:32,167 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 20:02:32,168 - app.modules.accounts.application.account_service - INFO - Starting full account creation sequence for persona-jK7q7X9O-Y3PGRMk
+2026-10-07 20:02:32,300 - app.modules.accounts.platforms.full_signup - INFO - Starting full account creation flow for persona-jK7q7X9O-Y3PGRMk
+2026-10-07 20:03:16,258 - app.modules.accounts.platforms.outlook.signup_flows - ERROR - Outlook signup failed: Timeout 30000ms exceeded.
+2026-10-07 20:03:16,258 - app.modules.accounts.platforms.full_signup - ERROR - Outlook account creation failed: Timeout 30000ms exceeded.
+2026-10-07 20:03:16,258 - app.modules.accounts.platforms.full_signup - ERROR - Failed to create Outlook account
+2026-10-07 20:03:16,265 - app.modules.accounts.application.account_service - ERROR - Full account creation verification failed
+2026-10-07 20:03:16,265 - app.modules.accounts.application.account_service - ERROR - Full account sequence failed: Account verification failed
+Traceback (most recent call last):
+  File "C:\git\android-farm\backend\app\modules\accounts\application\account_service.py", line 196, in _create_full_account_sequence
+    raise Exception("Account verification failed")
+Exception: Account verification failed
+2026-10-07 20:03:16,266 - app.api.accounts - ERROR - Account creation request failed: Account verification failed
+2026-10-07 20:03:20,521 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 20:03:20,521 - app.modules.accounts.application.account_service - INFO - Starting full account creation sequence for persona-jK7q7X9O-Y3PGRMk
+2026-10-07 20:03:20,648 - app.modules.accounts.platforms.full_signup - INFO - Starting full account creation flow for persona-jK7q7X9O-Y3PGRMk
+2026-10-07 20:04:05,857 - app.modules.accounts.platforms.outlook.signup_flows - ERROR - Outlook signup failed: Timeout 30000ms exceeded.
+2026-10-07 20:04:05,857 - app.modules.accounts.platforms.full_signup - ERROR - Outlook account creation failed: Timeout 30000ms exceeded.
+2026-10-07 20:04:05,857 - app.modules.accounts.platforms.full_signup - ERROR - Failed to create Outlook account
+2026-10-07 20:04:05,864 - app.modules.accounts.application.account_service - ERROR - Full account creation verification failed
+2026-10-07 20:04:05,864 - app.modules.accounts.application.account_service - ERROR - Full account sequence failed: Account verification failed
+Traceback (most recent call last):
+  File "C:\git\android-farm\backend\app\modules\accounts\application\account_service.py", line 196, in _create_full_account_sequence
+    raise Exception("Account verification failed")
+Exception: Account verification failed
+2026-10-07 20:04:05,865 - app.api.accounts - ERROR - Account creation request failed: Account verification failed
+2026-10-07 20:04:12,120 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 20:04:12,121 - app.modules.accounts.application.account_service - INFO - Starting full account creation sequence for persona-jK7q7X9O-Y3PGRMk
+2026-10-07 20:04:12,251 - app.modules.accounts.platforms.full_signup - INFO - Starting full account creation flow for persona-jK7q7X9O-Y3PGRMk
+2026-10-07 20:04:58,211 - app.modules.accounts.platforms.outlook.signup_flows - ERROR - Outlook signup failed: Timeout 30000ms exceeded.
+2026-10-07 20:04:58,211 - app.modules.accounts.platforms.full_signup - ERROR - Outlook account creation failed: Timeout 30000ms exceeded.
+2026-10-07 20:04:58,211 - app.modules.accounts.platforms.full_signup - ERROR - Failed to create Outlook account
+2026-10-07 20:04:58,219 - app.modules.accounts.application.account_service - ERROR - Full account creation verification failed
+2026-10-07 20:04:58,220 - app.modules.accounts.application.account_service - ERROR - Full account sequence failed: Account verification failed
+Traceback (most recent call last):
+  File "C:\git\android-farm\backend\app\modules\accounts\application\account_service.py", line 196, in _create_full_account_sequence
+    raise Exception("Account verification failed")
+Exception: Account verification failed
+2026-10-07 20:04:58,220 - app.api.accounts - ERROR - Account creation request failed: Account verification failed
+2026-10-07 20:04:58,729 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 20:04:58,729 - app.modules.accounts.application.account_service - INFO - Starting full account creation sequence for persona-9Nn_cphUfDJMuQMN
+2026-10-07 20:04:58,865 - app.modules.accounts.platforms.full_signup - INFO - Starting full account creation flow for persona-9Nn_cphUfDJMuQMN
+2026-10-07 20:05:44,499 - app.modules.accounts.platforms.outlook.signup_flows - ERROR - Outlook signup failed: Timeout 30000ms exceeded.
+2026-10-07 20:05:44,499 - app.modules.accounts.platforms.full_signup - ERROR - Outlook account creation failed: Timeout 30000ms exceeded.
+2026-10-07 20:05:44,499 - app.modules.accounts.platforms.full_signup - ERROR - Failed to create Outlook account
+2026-10-07 20:05:44,507 - app.modules.accounts.application.account_service - ERROR - Full account creation verification failed
+2026-10-07 20:05:44,507 - app.modules.accounts.application.account_service - ERROR - Full account sequence failed: Account verification failed
+Traceback (most recent call last):
+  File "C:\git\android-farm\backend\app\modules\accounts\application\account_service.py", line 196, in _create_full_account_sequence
+    raise Exception("Account verification failed")
+Exception: Account verification failed
+2026-10-07 20:05:44,508 - app.api.accounts - ERROR - Account creation request failed: Account verification failed
+2026-10-07 20:05:56,765 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 20:05:56,765 - app.modules.accounts.application.account_service - INFO - Starting full account creation sequence for persona-9Nn_cphUfDJMuQMN
+2026-10-07 20:05:56,892 - app.modules.accounts.platforms.full_signup - INFO - Starting full account creation flow for persona-9Nn_cphUfDJMuQMN
+2026-10-07 20:06:41,317 - app.modules.accounts.platforms.outlook.signup_flows - ERROR - Outlook signup failed: Timeout 30000ms exceeded.
+2026-10-07 20:06:41,317 - app.modules.accounts.platforms.full_signup - ERROR - Outlook account creation failed: Timeout 30000ms exceeded.
+2026-10-07 20:06:41,317 - app.modules.accounts.platforms.full_signup - ERROR - Failed to create Outlook account
+2026-10-07 20:06:41,324 - app.modules.accounts.application.account_service - ERROR - Full account creation verification failed
+2026-10-07 20:06:41,324 - app.modules.accounts.application.account_service - ERROR - Full account sequence failed: Account verification failed
+Traceback (most recent call last):
+  File "C:\git\android-farm\backend\app\modules\accounts\application\account_service.py", line 196, in _create_full_account_sequence
+    raise Exception("Account verification failed")
+Exception: Account verification failed
+2026-10-07 20:06:41,324 - app.api.accounts - ERROR - Account creation request failed: Account verification failed
+2026-10-07 20:06:45,580 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 20:06:45,580 - app.modules.accounts.application.account_service - INFO - Starting full account creation sequence for persona-9Nn_cphUfDJMuQMN
+2026-10-07 20:06:45,701 - app.modules.accounts.platforms.full_signup - INFO - Starting full account creation flow for persona-9Nn_cphUfDJMuQMN
+2026-10-07 20:07:32,112 - app.modules.accounts.platforms.outlook.signup_flows - ERROR - Outlook signup failed: Timeout 30000ms exceeded.
+2026-10-07 20:07:32,112 - app.modules.accounts.platforms.full_signup - ERROR - Outlook account creation failed: Timeout 30000ms exceeded.
+2026-10-07 20:07:32,112 - app.modules.accounts.platforms.full_signup - ERROR - Failed to create Outlook account
+2026-10-07 20:07:32,119 - app.modules.accounts.application.account_service - ERROR - Full account creation verification failed
+2026-10-07 20:07:32,119 - app.modules.accounts.application.account_service - ERROR - Full account sequence failed: Account verification failed
+Traceback (most recent call last):
+  File "C:\git\android-farm\backend\app\modules\accounts\application\account_service.py", line 196, in _create_full_account_sequence
+    raise Exception("Account verification failed")
+Exception: Account verification failed
+2026-10-07 20:07:32,120 - app.api.accounts - ERROR - Account creation request failed: Account verification failed
+2026-10-07 20:07:38,377 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 20:07:38,377 - app.modules.accounts.application.account_service - INFO - Starting full account creation sequence for persona-9Nn_cphUfDJMuQMN
+2026-10-07 20:07:38,502 - app.modules.accounts.platforms.full_signup - INFO - Starting full account creation flow for persona-9Nn_cphUfDJMuQMN
+2026-10-07 20:08:25,167 - app.modules.accounts.platforms.outlook.signup_flows - ERROR - Outlook signup failed: Timeout 30000ms exceeded.
+2026-10-07 20:08:25,167 - app.modules.accounts.platforms.full_signup - ERROR - Outlook account creation failed: Timeout 30000ms exceeded.
+2026-10-07 20:08:25,167 - app.modules.accounts.platforms.full_signup - ERROR - Failed to create Outlook account
+2026-10-07 20:08:25,174 - app.modules.accounts.application.account_service - ERROR - Full account creation verification failed
+2026-10-07 20:08:25,174 - app.modules.accounts.application.account_service - ERROR - Full account sequence failed: Account verification failed
+Traceback (most recent call last):
+  File "C:\git\android-farm\backend\app\modules\accounts\application\account_service.py", line 196, in _create_full_account_sequence
+    raise Exception("Account verification failed")
+Exception: Account verification failed
+2026-10-07 20:08:25,175 - app.api.accounts - ERROR - Account creation request failed: Account verification failed
+2026-10-07 20:08:25,684 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 20:08:25,685 - app.modules.accounts.application.account_service - INFO - Starting full account creation sequence for persona-39fRNSFlEtmOTCkv
+2026-10-07 20:08:25,827 - app.modules.accounts.platforms.full_signup - INFO - Starting full account creation flow for persona-39fRNSFlEtmOTCkv
+2026-10-07 20:09:13,558 - app.modules.accounts.platforms.outlook.signup_flows - ERROR - Outlook signup failed: Timeout 30000ms exceeded.
+2026-10-07 20:09:13,558 - app.modules.accounts.platforms.full_signup - ERROR - Outlook account creation failed: Timeout 30000ms exceeded.
+2026-10-07 20:09:13,558 - app.modules.accounts.platforms.full_signup - ERROR - Failed to create Outlook account
+2026-10-07 20:09:13,564 - app.modules.accounts.application.account_service - ERROR - Full account creation verification failed
+2026-10-07 20:09:13,564 - app.modules.accounts.application.account_service - ERROR - Full account sequence failed: Account verification failed
+Traceback (most recent call last):
+  File "C:\git\android-farm\backend\app\modules\accounts\application\account_service.py", line 196, in _create_full_account_sequence
+    raise Exception("Account verification failed")
+Exception: Account verification failed
+2026-10-07 20:09:13,565 - app.api.accounts - ERROR - Account creation request failed: Account verification failed
+2026-10-07 20:09:25,823 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 20:09:25,823 - app.modules.accounts.application.account_service - INFO - Starting full account creation sequence for persona-39fRNSFlEtmOTCkv
+2026-10-07 20:09:25,945 - app.modules.accounts.platforms.full_signup - INFO - Starting full account creation flow for persona-39fRNSFlEtmOTCkv
+2026-10-07 20:10:11,524 - app.modules.accounts.platforms.outlook.signup_flows - ERROR - Outlook signup failed: Timeout 30000ms exceeded.
+2026-10-07 20:10:11,524 - app.modules.accounts.platforms.full_signup - ERROR - Outlook account creation failed: Timeout 30000ms exceeded.
+2026-10-07 20:10:11,524 - app.modules.accounts.platforms.full_signup - ERROR - Failed to create Outlook account
+2026-10-07 20:10:11,531 - app.modules.accounts.application.account_service - ERROR - Full account creation verification failed
+2026-10-07 20:10:11,531 - app.modules.accounts.application.account_service - ERROR - Full account sequence failed: Account verification failed
+Traceback (most recent call last):
+  File "C:\git\android-farm\backend\app\modules\accounts\application\account_service.py", line 196, in _create_full_account_sequence
+    raise Exception("Account verification failed")
+Exception: Account verification failed
+2026-10-07 20:10:11,532 - app.api.accounts - ERROR - Account creation request failed: Account verification failed
+2026-10-07 20:10:15,788 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 20:10:15,788 - app.modules.accounts.application.account_service - INFO - Starting full account creation sequence for persona-39fRNSFlEtmOTCkv
+2026-10-07 20:10:15,905 - app.modules.accounts.platforms.full_signup - INFO - Starting full account creation flow for persona-39fRNSFlEtmOTCkv
+2026-10-07 20:11:01,740 - app.modules.accounts.platforms.outlook.signup_flows - ERROR - Outlook signup failed: Timeout 30000ms exceeded.
+2026-10-07 20:11:01,740 - app.modules.accounts.platforms.full_signup - ERROR - Outlook account creation failed: Timeout 30000ms exceeded.
+2026-10-07 20:11:01,740 - app.modules.accounts.platforms.full_signup - ERROR - Failed to create Outlook account
+2026-10-07 20:11:01,748 - app.modules.accounts.application.account_service - ERROR - Full account creation verification failed
+2026-10-07 20:11:01,748 - app.modules.accounts.application.account_service - ERROR - Full account sequence failed: Account verification failed
+Traceback (most recent call last):
+  File "C:\git\android-farm\backend\app\modules\accounts\application\account_service.py", line 196, in _create_full_account_sequence
+    raise Exception("Account verification failed")
+Exception: Account verification failed
+2026-10-07 20:11:01,749 - app.api.accounts - ERROR - Account creation request failed: Account verification failed
+2026-10-07 20:11:08,005 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 20:11:08,005 - app.modules.accounts.application.account_service - INFO - Starting full account creation sequence for persona-39fRNSFlEtmOTCkv
+2026-10-07 20:11:08,131 - app.modules.accounts.platforms.full_signup - INFO - Starting full account creation flow for persona-39fRNSFlEtmOTCkv
+2026-10-07 20:11:50,545 - app.modules.accounts.platforms.outlook.signup_flows - ERROR - Outlook signup failed: Timeout 30000ms exceeded.
+2026-10-07 20:11:50,545 - app.modules.accounts.platforms.full_signup - ERROR - Outlook account creation failed: Timeout 30000ms exceeded.
+2026-10-07 20:11:50,546 - app.modules.accounts.platforms.full_signup - ERROR - Failed to create Outlook account
+2026-10-07 20:11:50,553 - app.modules.accounts.application.account_service - ERROR - Full account creation verification failed
+2026-10-07 20:11:50,553 - app.modules.accounts.application.account_service - ERROR - Full account sequence failed: Account verification failed
+Traceback (most recent call last):
+  File "C:\git\android-farm\backend\app\modules\accounts\application\account_service.py", line 196, in _create_full_account_sequence
+    raise Exception("Account verification failed")
+Exception: Account verification failed
+2026-10-07 20:11:50,553 - app.api.accounts - ERROR - Account creation request failed: Account verification failed
+2026-10-07 20:12:57,011 - app.main - INFO - Starting android-farm
+2026-10-07 20:12:57,028 - app.db - INFO - Database initialized with URL: sqlite:///./data/farm.db
+2026-10-07 20:12:57,038 - app.db - INFO - Platform configs seeded
+2026-10-07 20:12:57,039 - app.security.secret_store - INFO - Secret store loaded key from ./data/secret.key
+2026-10-07 20:12:57,039 - app.security.secret_store - INFO - Secret store initialized
+2026-10-07 20:12:57,039 - app.modules.proxies.domain.proxy - INFO - Proxy manager initialized
+2026-10-07 20:12:57,039 - app.modules.browsers.domain.browser_profile - INFO - Browser manager initialized
+2026-10-07 20:12:57,039 - app.main - INFO - android-farm initialized successfully
+2026-10-07 20:13:23,436 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 20:13:23,437 - app.modules.accounts.application.account_service - INFO - Starting full account creation sequence for persona-jK7q7X9O-Y3PGRMk
+2026-10-07 20:13:23,717 - app.modules.browsers.domain.browser_profile - INFO - Browser playwright started
+2026-10-07 20:13:23,855 - app.modules.accounts.platforms.full_signup - INFO - Starting full account creation flow for persona-jK7q7X9O-Y3PGRMk
+2026-10-07 20:14:38,960 - app.modules.accounts.platforms.outlook.signup_flows - WARNING - Network idle timeout, but continuing
+2026-10-07 20:14:38,960 - app.modules.accounts.platforms.full_signup - INFO - Outlook account created: marcos.leal725@outlook.com
+2026-10-07 20:14:55,184 - app.modules.accounts.platforms.full_signup - INFO - Instagram account created successfully
+2026-10-07 20:14:55,198 - app.modules.accounts.application.account_service - INFO - Outlook account created: marcos.leal725@outlook.com
+2026-10-07 20:14:55,199 - app.modules.accounts.application.account_service - INFO - Instagram account created: marcos.leal725@outlook.com
+2026-10-07 20:14:55,209 - app.modules.accounts.application.account_service - ERROR - Full account sequence failed: type object 'CredentialStatus' has no attribute 'valid'
+Traceback (most recent call last):
+  File "C:\git\android-farm\backend\app\modules\accounts\application\account_service.py", line 226, in _create_full_account_sequence
+    status=CredentialStatus.valid
+           ^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: type object 'CredentialStatus' has no attribute 'valid'. Did you mean: 'invalid'?
+2026-10-07 20:14:55,211 - app.api.accounts - ERROR - Account creation request failed: type object 'CredentialStatus' has no attribute 'valid'
+2026-10-07 20:15:21,856 - app.main - INFO - Starting android-farm
+2026-10-07 20:15:21,871 - app.db - INFO - Database initialized with URL: sqlite:///./data/farm.db
+2026-10-07 20:15:21,879 - app.db - INFO - Platform configs seeded
+2026-10-07 20:15:21,879 - app.security.secret_store - INFO - Secret store loaded key from ./data/secret.key
+2026-10-07 20:15:21,879 - app.security.secret_store - INFO - Secret store initialized
+2026-10-07 20:15:21,879 - app.modules.proxies.domain.proxy - INFO - Proxy manager initialized
+2026-10-07 20:15:21,879 - app.modules.browsers.domain.browser_profile - INFO - Browser manager initialized
+2026-10-07 20:15:21,879 - app.main - INFO - android-farm initialized successfully
+2026-10-07 20:15:28,235 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 20:15:28,235 - app.modules.accounts.application.account_service - INFO - Starting full account creation sequence for persona-jK7q7X9O-Y3PGRMk
+2026-10-07 20:15:28,583 - app.modules.browsers.domain.browser_profile - INFO - Browser playwright started
+2026-10-07 20:15:28,765 - app.modules.accounts.platforms.full_signup - INFO - Starting full account creation flow for persona-jK7q7X9O-Y3PGRMk
+2026-10-07 20:16:45,691 - app.modules.accounts.platforms.outlook.signup_flows - WARNING - Network idle timeout, but continuing
+2026-10-07 20:16:45,692 - app.modules.accounts.platforms.full_signup - INFO - Outlook account created: marcos.leal772@outlook.com
+2026-10-07 20:17:01,626 - app.modules.accounts.platforms.full_signup - INFO - Instagram account created successfully
+2026-10-07 20:17:01,640 - app.modules.accounts.application.account_service - INFO - Outlook account created: marcos.leal772@outlook.com
+2026-10-07 20:17:01,640 - app.modules.accounts.application.account_service - INFO - Instagram account created: marcos.leal772@outlook.com
+2026-10-07 20:17:01,644 - app.modules.accounts.application.account_service - ERROR - Full account sequence failed: 'platform' is an invalid keyword argument for Credential
+Traceback (most recent call last):
+  File "C:\git\android-farm\backend\app\modules\accounts\application\account_service.py", line 221, in _create_full_account_sequence
+    outlook_credential = Credential(
+        account_id=outlook_account.id,
+    ...<3 lines>...
+        status=CredentialStatus.active
+    )
+  File "<string>", line 4, in __init__
+  File "C:\Program Files\Python313\Lib\site-packages\sqlalchemy\orm\state.py", line 596, in _initialize_instance
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Program Files\Python313\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 122, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Program Files\Python313\Lib\site-packages\sqlalchemy\orm\state.py", line 594, in _initialize_instance
+    manager.original_init(*mixed[1:], **kwargs)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\site-packages\sqlalchemy\orm\decl_base.py", line 2193, in _declarative_constructor
+    raise TypeError(
+        "%r is an invalid keyword argument for %s" % (k, cls_.__name__)
+    )
+TypeError: 'platform' is an invalid keyword argument for Credential
+2026-10-07 20:17:01,673 - app.api.accounts - ERROR - Account creation request failed: 'platform' is an invalid keyword argument for Credential
+2026-10-07 20:17:42,950 - app.main - INFO - Starting android-farm
+2026-10-07 20:17:42,964 - app.db - INFO - Database initialized with URL: sqlite:///./data/farm.db
+2026-10-07 20:17:42,971 - app.db - INFO - Platform configs seeded
+2026-10-07 20:17:42,971 - app.security.secret_store - INFO - Secret store loaded key from ./data/secret.key
+2026-10-07 20:17:42,971 - app.security.secret_store - INFO - Secret store initialized
+2026-10-07 20:17:42,971 - app.modules.proxies.domain.proxy - INFO - Proxy manager initialized
+2026-10-07 20:17:42,971 - app.modules.browsers.domain.browser_profile - INFO - Browser manager initialized
+2026-10-07 20:17:42,972 - app.main - INFO - android-farm initialized successfully
+2026-10-07 20:17:49,575 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 20:17:49,575 - app.modules.accounts.application.account_service - INFO - Starting full account creation sequence for persona-jK7q7X9O-Y3PGRMk
+2026-10-07 20:17:49,876 - app.modules.browsers.domain.browser_profile - INFO - Browser playwright started
+2026-10-07 20:17:50,023 - app.modules.accounts.platforms.full_signup - INFO - Starting full account creation flow for persona-jK7q7X9O-Y3PGRMk
+2026-10-07 20:19:06,656 - app.modules.accounts.platforms.outlook.signup_flows - WARNING - Network idle timeout, but continuing
+2026-10-07 20:19:06,656 - app.modules.accounts.platforms.full_signup - INFO - Outlook account created: marcos.leal793@live.com
+2026-10-07 20:19:25,448 - app.modules.accounts.platforms.full_signup - INFO - Instagram account created successfully
+2026-10-07 20:19:25,461 - app.modules.accounts.application.account_service - INFO - Outlook account created: marcos.leal793@live.com
+2026-10-07 20:19:25,461 - app.modules.accounts.application.account_service - INFO - Instagram account created: marcos.leal793@live.com
+2026-10-07 20:19:25,466 - app.modules.accounts.application.account_service - ERROR - Full account sequence failed: SecretStore.__init__() missing 2 required positional arguments: 'key_file' and 'storage_path'
+Traceback (most recent call last):
+  File "C:\git\android-farm\backend\app\modules\accounts\application\account_service.py", line 230, in _create_full_account_sequence
+    secret_store = SecretStore()
+TypeError: SecretStore.__init__() missing 2 required positional arguments: 'key_file' and 'storage_path'
+2026-10-07 20:19:25,467 - app.api.accounts - ERROR - Account creation request failed: SecretStore.__init__() missing 2 required positional arguments: 'key_file' and 'storage_path'
+2026-10-07 20:19:50,690 - app.main - INFO - Starting android-farm
+2026-10-07 20:19:50,705 - app.db - INFO - Database initialized with URL: sqlite:///./data/farm.db
+2026-10-07 20:19:50,713 - app.db - INFO - Platform configs seeded
+2026-10-07 20:19:50,713 - app.security.secret_store - INFO - Secret store loaded key from ./data/secret.key
+2026-10-07 20:19:50,713 - app.security.secret_store - INFO - Secret store initialized
+2026-10-07 20:19:50,713 - app.modules.proxies.domain.proxy - INFO - Proxy manager initialized
+2026-10-07 20:19:50,713 - app.modules.browsers.domain.browser_profile - INFO - Browser manager initialized
+2026-10-07 20:19:50,713 - app.main - INFO - android-farm initialized successfully
+2026-10-07 20:19:57,657 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 20:19:57,657 - app.modules.accounts.application.account_service - INFO - Starting full account creation sequence for persona-jK7q7X9O-Y3PGRMk
+2026-10-07 20:19:57,943 - app.modules.browsers.domain.browser_profile - INFO - Browser playwright started
+2026-10-07 20:19:58,097 - app.modules.accounts.platforms.full_signup - INFO - Starting full account creation flow for persona-jK7q7X9O-Y3PGRMk
+2026-10-07 20:21:18,796 - app.modules.accounts.platforms.outlook.signup_flows - WARNING - Network idle timeout, but continuing
+2026-10-07 20:21:18,796 - app.modules.accounts.platforms.full_signup - INFO - Outlook account created: marcos.leal265@outlook.com
+2026-10-07 20:21:35,054 - app.modules.accounts.platforms.full_signup - INFO - Instagram account created successfully
+2026-10-07 20:21:35,067 - app.modules.accounts.application.account_service - INFO - Outlook account created: marcos.leal265@outlook.com
+2026-10-07 20:21:35,068 - app.modules.accounts.application.account_service - INFO - Instagram account created: marcos.leal265@outlook.com
+2026-10-07 20:21:35,102 - app.modules.accounts.application.account_service - INFO - Full account creation completed successfully for persona-jK7q7X9O-Y3PGRMk
+2026-10-07 20:23:23,427 - app.main - INFO - Starting android-farm
+2026-10-07 20:23:23,443 - app.db - INFO - Database initialized with URL: sqlite:///./data/farm.db
+2026-10-07 20:23:23,452 - app.db - INFO - Platform configs seeded
+2026-10-07 20:23:23,452 - app.security.secret_store - INFO - Secret store loaded key from ./data/secret.key
+2026-10-07 20:23:23,452 - app.security.secret_store - INFO - Secret store initialized
+2026-10-07 20:23:23,452 - app.modules.proxies.domain.proxy - INFO - Proxy manager initialized
+2026-10-07 20:23:23,453 - app.modules.browsers.domain.browser_profile - INFO - Browser manager initialized
+2026-10-07 20:23:23,453 - app.main - INFO - android-farm initialized successfully
+2026-10-07 20:23:33,120 - app.modules.accounts.application.account_service - INFO - Deleted account 29c41230-3f1d-4828-83d7-de3f4a3fab68
+2026-10-07 20:23:33,148 - app.modules.accounts.application.account_service - INFO - Deleted account 5a31a4a7-32bc-4764-8e17-ba4d51b9c603
+2026-10-07 20:23:39,493 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 20:23:39,493 - app.modules.accounts.application.account_service - INFO - Starting full account creation sequence for persona-jK7q7X9O-Y3PGRMk
+2026-10-07 20:23:39,756 - app.modules.browsers.domain.browser_profile - INFO - Browser playwright started
+2026-10-07 20:23:39,891 - app.modules.accounts.platforms.full_signup - INFO - Starting full account creation flow for persona-jK7q7X9O-Y3PGRMk
+2026-10-07 20:24:56,737 - app.modules.accounts.platforms.outlook.signup_flows - WARNING - Network idle timeout, but continuing
+2026-10-07 20:24:56,737 - app.modules.accounts.platforms.full_signup - INFO - Outlook account created: marcos.leal376@hotmail.com
+2026-10-07 20:25:13,216 - app.modules.accounts.platforms.full_signup - INFO - Instagram account created successfully
+2026-10-07 20:25:13,230 - app.modules.accounts.application.account_service - INFO - Outlook account created: marcos.leal376@hotmail.com
+2026-10-07 20:25:13,230 - app.modules.accounts.application.account_service - INFO - Instagram account created: marcos.leal376@hotmail.com
+2026-10-07 20:25:13,251 - app.modules.accounts.application.account_service - INFO - Full account creation completed successfully for persona-jK7q7X9O-Y3PGRMk
+2026-10-07 20:26:32,341 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 20:26:32,341 - app.modules.accounts.application.account_service - INFO - Starting full account creation sequence for persona-9Nn_cphUfDJMuQMN
+2026-10-07 20:26:33,085 - app.modules.accounts.platforms.full_signup - INFO - Starting full account creation flow for persona-9Nn_cphUfDJMuQMN
+2026-10-07 20:26:51,963 - app.modules.accounts.platforms.full_signup - INFO - Outlook account created: helena.barbosa901@outlook.com
+2026-10-07 20:27:09,029 - app.modules.accounts.platforms.full_signup - INFO - Instagram account created successfully
+2026-10-07 20:27:09,040 - app.modules.accounts.application.account_service - INFO - Outlook account created: helena.barbosa901@outlook.com
+2026-10-07 20:27:09,040 - app.modules.accounts.application.account_service - INFO - Instagram account created: helena.barbosa901@outlook.com
+2026-10-07 20:27:09,055 - app.modules.accounts.application.account_service - INFO - Full account creation completed successfully for persona-9Nn_cphUfDJMuQMN
+2026-10-07 20:27:19,567 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 20:27:19,567 - app.modules.accounts.application.account_service - INFO - Starting full account creation sequence for persona-39fRNSFlEtmOTCkv
+2026-10-07 20:27:20,255 - app.modules.accounts.platforms.full_signup - INFO - Starting full account creation flow for persona-39fRNSFlEtmOTCkv
+2026-10-07 20:28:36,100 - app.modules.accounts.platforms.outlook.signup_flows - WARNING - Network idle timeout, but continuing
+2026-10-07 20:28:36,100 - app.modules.accounts.platforms.full_signup - INFO - Outlook account created: diego.salles602@live.com
+2026-10-07 20:28:53,412 - app.modules.accounts.platforms.full_signup - INFO - Instagram account created successfully
+2026-10-07 20:28:53,422 - app.modules.accounts.application.account_service - INFO - Outlook account created: diego.salles602@live.com
+2026-10-07 20:28:53,422 - app.modules.accounts.application.account_service - INFO - Instagram account created: diego.salles602@live.com
+2026-10-07 20:28:53,435 - app.modules.accounts.application.account_service - INFO - Full account creation completed successfully for persona-39fRNSFlEtmOTCkv
+2026-10-07 20:29:03,945 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 20:29:03,945 - app.modules.accounts.application.account_service - INFO - Starting full account creation sequence for persona-d4h6m3l4uBUaBWak
+2026-10-07 20:29:04,068 - app.modules.accounts.platforms.full_signup - INFO - Starting full account creation flow for persona-d4h6m3l4uBUaBWak
+2026-10-07 20:30:21,956 - app.modules.accounts.platforms.outlook.signup_flows - WARNING - Network idle timeout, but continuing
+2026-10-07 20:30:21,956 - app.modules.accounts.platforms.full_signup - INFO - Outlook account created: larissa.fontes557@hotmail.com
+2026-10-07 20:30:39,685 - app.modules.accounts.platforms.full_signup - INFO - Instagram account created successfully
+2026-10-07 20:30:39,694 - app.modules.accounts.application.account_service - INFO - Outlook account created: larissa.fontes557@hotmail.com
+2026-10-07 20:30:39,695 - app.modules.accounts.application.account_service - INFO - Instagram account created: larissa.fontes557@hotmail.com
+2026-10-07 20:30:39,714 - app.modules.accounts.application.account_service - INFO - Full account creation completed successfully for persona-d4h6m3l4uBUaBWak
+2026-10-07 20:30:50,224 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 20:30:50,224 - app.modules.accounts.application.account_service - INFO - Starting full account creation sequence for persona-pU4t0QScrO03kLA_
+2026-10-07 20:30:50,345 - app.modules.accounts.platforms.full_signup - INFO - Starting full account creation flow for persona-pU4t0QScrO03kLA_
+2026-10-07 20:32:04,889 - app.modules.accounts.platforms.outlook.signup_flows - WARNING - Network idle timeout, but continuing
+2026-10-07 20:32:04,889 - app.modules.accounts.platforms.full_signup - INFO - Outlook account created: rafael.pires866@live.com
+2026-10-07 20:32:22,353 - app.modules.accounts.platforms.full_signup - INFO - Instagram account created successfully
+2026-10-07 20:32:22,362 - app.modules.accounts.application.account_service - INFO - Outlook account created: rafael.pires866@live.com
+2026-10-07 20:32:22,362 - app.modules.accounts.application.account_service - INFO - Instagram account created: rafael.pires866@live.com
+2026-10-07 20:32:22,377 - app.modules.accounts.application.account_service - INFO - Full account creation completed successfully for persona-pU4t0QScrO03kLA_
+2026-10-07 20:32:32,887 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 20:32:32,887 - app.modules.accounts.application.account_service - INFO - Starting full account creation sequence for persona-Qud6TL9ZehJggYAT
+2026-10-07 20:32:33,019 - app.modules.accounts.platforms.full_signup - INFO - Starting full account creation flow for persona-Qud6TL9ZehJggYAT
+2026-10-07 20:33:47,387 - app.modules.accounts.platforms.outlook.signup_flows - WARNING - Network idle timeout, but continuing
+2026-10-07 20:33:47,387 - app.modules.accounts.platforms.full_signup - INFO - Outlook account created: camila.duarte772@live.com
+2026-10-07 20:34:06,789 - app.modules.accounts.platforms.full_signup - INFO - Instagram account created successfully
+2026-10-07 20:34:06,798 - app.modules.accounts.application.account_service - INFO - Outlook account created: camila.duarte772@live.com
+2026-10-07 20:34:06,798 - app.modules.accounts.application.account_service - INFO - Instagram account created: camila.duarte772@live.com
+2026-10-07 20:34:06,812 - app.modules.accounts.application.account_service - INFO - Full account creation completed successfully for persona-Qud6TL9ZehJggYAT
+2026-10-07 20:34:17,323 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 20:34:17,324 - app.modules.accounts.application.account_service - INFO - Starting full account creation sequence for persona-O_bYrgUNRLBiH5F7
+2026-10-07 20:34:17,444 - app.modules.accounts.platforms.full_signup - INFO - Starting full account creation flow for persona-O_bYrgUNRLBiH5F7
+2026-10-07 20:35:34,044 - app.modules.accounts.platforms.outlook.signup_flows - WARNING - Network idle timeout, but continuing
+2026-10-07 20:35:34,044 - app.modules.accounts.platforms.full_signup - INFO - Outlook account created: thiago.moreira800@hotmail.com
+2026-10-07 20:35:52,592 - app.modules.accounts.platforms.full_signup - INFO - Instagram account created successfully
+2026-10-07 20:35:52,603 - app.modules.accounts.application.account_service - INFO - Outlook account created: thiago.moreira800@hotmail.com
+2026-10-07 20:35:52,603 - app.modules.accounts.application.account_service - INFO - Instagram account created: thiago.moreira800@hotmail.com
+2026-10-07 20:35:52,617 - app.modules.accounts.application.account_service - INFO - Full account creation completed successfully for persona-O_bYrgUNRLBiH5F7
+2026-10-07 20:36:03,129 - app.modules.proxies.domain.proxy - WARNING - No available proxy found
+2026-10-07 20:36:03,129 - app.modules.accounts.application.account_service - INFO - Starting full account creation sequence for persona-uVkCyLm11vGlPmPO
+2026-10-07 20:36:03,250 - app.modules.accounts.platforms.full_signup - INFO - Starting full account creation flow for persona-uVkCyLm11vGlPmPO
+2026-10-07 20:37:22,540 - app.modules.accounts.platforms.outlook.signup_flows - WARNING - Network idle timeout, but continuing
+2026-10-07 20:37:22,540 - app.modules.accounts.platforms.full_signup - INFO - Outlook account created: beatriz.rocha902@outlook.com
+2026-10-07 20:37:37,215 - app.modules.accounts.platforms.full_signup - INFO - Instagram account created successfully
+2026-10-07 20:37:37,225 - app.modules.accounts.application.account_service - INFO - Outlook account created: beatriz.rocha902@outlook.com
+2026-10-07 20:37:37,225 - app.modules.accounts.application.account_service - INFO - Instagram account created: beatriz.rocha902@outlook.com
+2026-10-07 20:37:37,240 - app.modules.accounts.application.account_service - INFO - Full account creation completed successfully for persona-uVkCyLm11vGlPmPO
+2026-10-07 21:07:48,513 - app.main - INFO - Starting android-farm
+2026-10-07 21:07:48,529 - app.db - INFO - Database initialized with URL: sqlite:///./data/farm.db
+2026-10-07 21:07:48,537 - app.db - INFO - Platform configs seeded
+2026-10-07 21:07:48,548 - app.security.secret_store - INFO - Secret store loaded key from ./data/secret.key
+2026-10-07 21:07:48,548 - app.security.secret_store - INFO - Secret store initialized
+2026-10-07 21:07:48,548 - app.modules.proxies.domain.proxy - INFO - Proxy manager initialized
+2026-10-07 21:07:48,548 - app.modules.browsers.domain.browser_profile - INFO - Browser manager initialized
+2026-10-07 21:07:48,548 - app.main - INFO - android-farm initialized successfully
+2026-10-08 07:34:50,550 - app.main - INFO - Starting android-farm
+2026-10-08 07:34:50,566 - app.db - INFO - Database initialized with URL: sqlite:///./data/farm.db
+2026-10-08 07:34:50,574 - app.db - INFO - Platform configs seeded
+2026-10-08 07:34:50,582 - app.security.secret_store - INFO - Secret store loaded key from ./data/secret.key
+2026-10-08 07:34:50,582 - app.security.secret_store - INFO - Secret store initialized
+2026-10-08 07:34:50,582 - app.modules.proxies.domain.proxy - INFO - Proxy manager initialized
+2026-10-08 07:34:50,582 - app.modules.browsers.domain.browser_profile - INFO - Browser manager initialized
+2026-10-08 07:34:50,582 - app.main - INFO - android-farm initialized successfully
+2026-10-08 07:35:07,041 - app.main - INFO - Starting android-farm
+2026-10-08 07:35:07,056 - app.db - INFO - Database initialized with URL: sqlite:///./data/farm.db
+2026-10-08 07:35:07,063 - app.db - INFO - Platform configs seeded
+2026-10-08 07:35:07,064 - app.security.secret_store - INFO - Secret store loaded key from ./data/secret.key
+2026-10-08 07:35:07,064 - app.security.secret_store - INFO - Secret store initialized
+2026-10-08 07:35:07,064 - app.modules.proxies.domain.proxy - INFO - Proxy manager initialized
+2026-10-08 07:35:07,064 - app.modules.browsers.domain.browser_profile - INFO - Browser manager initialized
+2026-10-08 07:35:07,064 - app.main - INFO - android-farm initialized successfully
+2026-10-08 07:48:25,413 - app.main - INFO - Starting android-farm
+2026-10-08 07:48:25,427 - app.db - INFO - Database initialized with URL: sqlite:///./data/farm.db
+2026-10-08 07:48:25,435 - app.db - INFO - Platform configs seeded
+2026-10-08 07:48:25,435 - app.security.secret_store - INFO - Secret store loaded key from ./data/secret.key
+2026-10-08 07:48:25,435 - app.security.secret_store - INFO - Secret store initialized
+2026-10-08 07:48:25,435 - app.modules.proxies.domain.proxy - INFO - Proxy manager initialized
+2026-10-08 07:48:25,435 - app.modules.browsers.domain.browser_profile - INFO - Browser manager initialized
+2026-10-08 07:48:25,435 - app.main - INFO - android-farm initialized successfully
+2026-10-08 08:16:44,497 - app.main - INFO - Starting android-farm
+2026-10-08 08:16:44,512 - app.db - INFO - Database initialized with URL: sqlite:///./data/farm.db
+2026-10-08 08:16:44,519 - app.db - INFO - Platform configs seeded
+2026-10-08 08:16:44,520 - app.security.secret_store - INFO - Secret store loaded key from ./data/secret.key
+2026-10-08 08:16:44,520 - app.security.secret_store - INFO - Secret store initialized
+2026-10-08 08:16:44,520 - app.modules.proxies.domain.proxy - INFO - Proxy manager initialized
+2026-10-08 08:16:44,520 - app.modules.browsers.domain.browser_profile - INFO - Browser manager initialized
+2026-10-08 08:16:44,520 - app.main - INFO - android-farm initialized successfully
+2026-10-08 08:18:12,592 - app.main - INFO - Starting android-farm
+2026-10-08 08:18:12,609 - app.db - INFO - Database initialized with URL: sqlite:///./data/farm.db
+2026-10-08 08:18:12,616 - app.db - INFO - Platform configs seeded
+2026-10-08 08:18:12,616 - app.security.secret_store - INFO - Secret store loaded key from ./data/secret.key
+2026-10-08 08:18:12,616 - app.security.secret_store - INFO - Secret store initialized
+2026-10-08 08:18:12,616 - app.modules.proxies.domain.proxy - INFO - Proxy manager initialized
+2026-10-08 08:18:12,616 - app.modules.browsers.domain.browser_profile - INFO - Browser manager initialized
+2026-10-08 08:18:12,616 - app.main - INFO - android-farm initialized successfully
