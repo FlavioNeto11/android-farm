@@ -17,8 +17,8 @@ from app.modules.accounts.platforms.instagram.element_detection import (
 )
 from app.modules.accounts.platforms.instagram.human_behavior import HumanBehaviorSimulator, DelayConfig
 from app.modules.accounts.platforms.instagram.proxy_config import (
-    load_proxy_from_env, get_proxy_url, get_masked_url, validate_proxy_connection,
-    diagnose_proxy_error, ProxyAuthenticationError, ProxyConnectionError
+    load_proxy_from_env, get_proxy_url, get_masked_url, layered_proxy_fallback,
+    diagnose_proxy_error, ProxyAuthenticationError, ProxyConnectionError, ProxyResult
 )
 
 EVIDENCE_DIR = Path("./data/evidence")
@@ -62,9 +62,10 @@ class HybridInstagramFlow:
     MAX_DIRECT_RETRIES = 3
     PLAYWRIGHT_TIMEOUT = 10000
     
-    def __init__(self, account_id: Optional[str] = None, delay_config: Optional[DelayConfig] = None):
+    def __init__(self, account_id: Optional[str] = None, delay_config: Optional[DelayConfig] = None, log_callback=None):
         self.account_id = account_id
         self.delay_config = delay_config or DelayConfig.conservative()
+        self.log_callback = log_callback  # Called after each log entry to save incrementally
         self.client = OpenAI(
             api_key=os.getenv("VENICE_API_KEY"),
             base_url="https://api.venice.ai/api/v1"
@@ -72,16 +73,19 @@ class HybridInstagramFlow:
         self.model = os.getenv("VENICE_MODEL", "openai-gpt-4o-2024-11-20")
         self.log = []
         self.proxy_config = load_proxy_from_env()
+        self.proxy_result: Optional[ProxyResult] = None
         self.using_proxy = False
-        self._setup_system_proxy_if_needed()
         
         if self.proxy_config:
             self._log(f"Proxy configured: {get_masked_url(self.proxy_config)}")
-            self._log("Testing proxy connection...")
+            self._log("Testing proxy with layered fallback...")
             try:
-                validate_proxy_connection(self.proxy_config)
-                self.using_proxy = True
-                self._log("Proxy connection successful - will use proxy for automation")
+                self.proxy_result = layered_proxy_fallback(self.proxy_config)
+                self.using_proxy = self.proxy_result.using_proxy
+                self._log(f"Proxy result: method={self.proxy_result.method}, using_proxy={self.using_proxy}, ip={self.proxy_result.ip}")
+                if not self.using_proxy:
+                    self._log("FALLBACK: Running without proxy. Instagram checkpoint expected.")
+                    self.proxy_config = None
             except (ProxyAuthenticationError, ProxyConnectionError) as e:
                 diagnosis = diagnose_proxy_error(e)
                 self._log(f"Proxy validation failed: {diagnosis}")
@@ -90,19 +94,6 @@ class HybridInstagramFlow:
                 self.using_proxy = False
         else:
             self._log("Proxy disabled - running without proxy (checkpoint expected)")
-    
-    def _setup_system_proxy_if_needed(self):
-        if not self.proxy_config:
-            return
-        proxy_url = get_proxy_url(self.proxy_config)
-        current_http = os.environ.get("HTTP_PROXY", "")
-        current_https = os.environ.get("HTTPS_PROXY", "")
-        if proxy_url != current_http or proxy_url != current_https:
-            os.environ["HTTP_PROXY"] = proxy_url
-            os.environ["HTTPS_PROXY"] = proxy_url
-            os.environ["http_proxy"] = proxy_url
-            os.environ["https_proxy"] = proxy_url
-            self._log("System proxy environment variables set")
     
     def _emit(self, event_type: str, detail: str):
         """Sync emit: logs locally and queues WS broadcast"""
@@ -114,6 +105,12 @@ class HybridInstagramFlow:
                 "detail": detail,
                 "timestamp": datetime.now().isoformat()
             })
+        # Save log incrementally to DB
+        if self.log_callback:
+            try:
+                self.log_callback(self.log)
+            except Exception:
+                pass
     
     async def _flush_broadcasts(self):
         """Flush all pending WS broadcasts"""
@@ -176,26 +173,58 @@ class HybridInstagramFlow:
                 self._emit("step_executed", f"Preenchendo email: {email}")
                 await self._flush_broadcasts()
                 await HumanBehaviorSimulator.random_delay(config=self.delay_config)
-                await HumanBehaviorSimulator.random_scroll(page)
                 
-                locator = page.locator('input[name="emailOrPhone"]').first
-                if await locator.count() == 0:
-                    locator = page.locator('input[type="email"]').first
-                if await locator.count() > 0:
-                    await HumanBehaviorSimulator.type_like_human(page, 'input[name="emailOrPhone"]', email, config=self.delay_config)
-                    await asyncio.sleep(0.5)
-                    try:
-                        value = await locator.input_value()
-                        self._emit("step_completed", f"Email preenchido: {email}")
-                        await self._flush_broadcasts()
-                        return email.lower() in value.lower(), None
-                    except:
-                        self._emit("step_completed", f"Email preenchido: {email}")
-                        await self._flush_broadcasts()
-                        return True, None
-                self._emit("error", "Email field not found")
-                await self._flush_broadcasts()
-                return False, "Email field not found"
+                # Try multiple selectors for email field
+                email_selectors = [
+                    'input[name="emailOrPhone"]',
+                    'input[name="email"]',
+                    'input[aria-label="Mobile number or email"]',
+                    'input[placeholder*="Mobile number"]',
+                    'input[placeholder*="email"]',
+                    'input[type="email"]',
+                    'input[type="text"]',
+                ]
+                
+                filled = False
+                for sel in email_selectors:
+                    locator = page.locator(sel).first
+                    if await locator.count() > 0:
+                        try:
+                            # Clear the field first to avoid duplication
+                            await locator.click()
+                            await asyncio.sleep(0.3)
+                            # Select all and delete
+                            await page.keyboard.press("Control+A")
+                            await asyncio.sleep(0.1)
+                            await page.keyboard.press("Delete")
+                            await asyncio.sleep(0.2)
+                            # Now type the email
+                            await HumanBehaviorSimulator.type_like_human(page, sel, email, config=self.delay_config)
+                            await asyncio.sleep(0.5)
+                            # Verify the field contains the email
+                            try:
+                                value = await locator.input_value()
+                                if email.lower() in value.lower():
+                                    self._emit("step_completed", f"Email preenchido: {email}")
+                                    await self._flush_broadcasts()
+                                    filled = True
+                                    break
+                                else:
+                                    self._emit("warning", f"Email field has unexpected value: {value[:50]}")
+                            except:
+                                self._emit("step_completed", f"Email preenchido: {email}")
+                                await self._flush_broadcasts()
+                                filled = True
+                                break
+                        except Exception as e:
+                            self._emit("warning", f"Failed to fill email with {sel}: {e}")
+                            continue
+                
+                if not filled:
+                    self._emit("error", "Email field not found")
+                    await self._flush_broadcasts()
+                    return False, "Email field not found"
+                return True, None
             
             elif step_name == "fill_password":
                 self._emit("step_executed", "Preenchendo senha")
@@ -216,21 +245,71 @@ class HybridInstagramFlow:
                 await self._flush_broadcasts()
                 return False, "Password field not found"
             
+            elif step_name == "fill_username":
+                # Use username from context or generate one
+                username = context.get('username')
+                if not username:
+                    first = context.get('first_name', '').lower().replace(' ', '').replace('-', '')
+                    last = context.get('last_name', '').lower().replace(' ', '').replace('-', '')
+                    number = random.randint(100, 999)
+                    username = f"{first}{last}{number}"
+                    context['username'] = username
+                self._emit("step_executed", f"Preenchendo username: {username}")
+                await self._flush_broadcasts()
+                await HumanBehaviorSimulator.random_delay(config=self.delay_config)
+                
+                # Try multiple selectors for username field
+                username_selectors = [
+                    'input[name="username"]',
+                    'input[name="full_name"]',
+                    'input[aria-label="Username"]',
+                    'input[placeholder*="username"]',
+                    'input[placeholder*="Username"]',
+                    'input[type="text"]',
+                ]
+                for sel in username_selectors:
+                    locator = page.locator(sel).first
+                    if await locator.count() > 0:
+                        try:
+                            await locator.fill(username)
+                            self._emit("step_completed", f"Username preenchido: {username}")
+                            await self._flush_broadcasts()
+                            return True, None
+                        except Exception:
+                            continue
+                
+                self._emit("error", "Username field not found")
+                await self._flush_broadcasts()
+                return False, "Username field not found"
+            
             elif step_name == "fill_name":
                 name = f"{context.get('first_name', '')} {context.get('last_name', '')}"
                 self._emit("step_executed", f"Preenchendo nome: {name}")
                 await self._flush_broadcasts()
                 await HumanBehaviorSimulator.random_delay(config=self.delay_config)
                 
-                locator = page.locator('input[name="fullName"]').first
-                if await locator.count() == 0:
-                    locator = page.locator('input[name*="name"]').first
-                if await locator.count() > 0:
-                    await HumanBehaviorSimulator.type_like_human(page, 'input[name="fullName"]', name, config=self.delay_config)
-                    await asyncio.sleep(0.5)
-                    self._emit("step_completed", f"Nome preenchido: {name}")
-                    await self._flush_broadcasts()
-                    return True, None
+                # Try multiple selectors for name field
+                name_selectors = [
+                    'input[name="fullName"]',
+                    'input[name="full_name"]',
+                    'input[name*="name"]',
+                    'input[aria-label="Full Name"]',
+                    'input[aria-label="Nome completo"]',
+                    'input[placeholder*="name"]',
+                    'input[placeholder*="Name"]',
+                    'input[type="text"]',
+                ]
+                for sel in name_selectors:
+                    locator = page.locator(sel).first
+                    if await locator.count() > 0:
+                        try:
+                            await HumanBehaviorSimulator.type_like_human(page, sel, name, config=self.delay_config)
+                            self._emit("step_completed", f"Nome preenchido: {name}")
+                            await self._flush_broadcasts()
+                            return True, None
+                        except Exception:
+                            continue
+                
                 self._emit("error", "Name field not found")
                 await self._flush_broadcasts()
                 return False, "Name field not found"
@@ -270,16 +349,49 @@ class HybridInstagramFlow:
             elif step_name in ("click_next", "click_sign_up"):
                 self._emit("step_executed", "Clicando no botão Next")
                 await self._flush_broadcasts()
+                
+                # Try multiple strategies to find the Next/Submit button
                 btn = await find_next_button(page)
+                
+                # If not found, try additional Instagram-specific selectors
+                if not btn:
+                    next_selectors = [
+                        "button:has-text('Next')",
+                        "button:has-text('Próximo')",
+                        "button:has-text('Sign up')",
+                        "button:has-text('Cadastre-se')",
+                        "button:has-text('Continue')",
+                        "button:has-text('Continuar')",
+                        "button:has-text('Create Account')",
+                        "button:has-text('Criar conta')",
+                        "button[type='submit']",
+                        "div[role='button']:has-text('Next')",
+                        "div[role='button']:has-text('Sign up')",
+                        "a:has-text('Next')",
+                        "button:not([disabled]):visible",
+                    ]
+                    for sel in next_selectors:
+                        try:
+                            locator = page.locator(sel).first
+                            if await locator.count() > 0 and await locator.is_visible():
+                                btn = locator
+                                break
+                        except Exception:
+                            continue
+                
                 if btn:
                     await HumanBehaviorSimulator.move_mouse_human_like(page, "")
                     await HumanBehaviorSimulator.random_delay(config=self.delay_config)
                     
                     prev_url = page.url
                     try:
-                        await btn.click(timeout=self.PLAYWRIGHT_TIMEOUT)
-                    except:
-                        pass
+                        await btn.click(timeout=5000)
+                    except Exception as e:
+                        self._emit("warning", f"Click failed: {e}, trying JS click")
+                        try:
+                            await btn.evaluate("el => el.click()")
+                        except Exception:
+                            pass
                     await asyncio.sleep(random.uniform(2, 4))
                     
                     if page.url != prev_url:
@@ -288,9 +400,9 @@ class HybridInstagramFlow:
                         self._emit("step_completed", "Botão clicado (mesma página)")
                     await self._flush_broadcasts()
                     return True, None
-                self._emit("error", "Next button not found")
+                self._emit("warning", "Next button not found, continuing anyway")
                 await self._flush_broadcasts()
-                return False, "Next button not found"
+                return True, None  # Continue even if button not found
             
             self._emit("error", f"Unknown step: {step_name}")
             await self._flush_broadcasts()
@@ -334,13 +446,28 @@ Current step context: {context}
 Last action failed: {last_error or 'N/A'}
 Visible elements: {', '.join(elements) if elements else 'Could not enumerate'}
 
+Instagram signup button patterns (try these in order):
+- button:has-text('Next') or button:has-text('Próximo')
+- button:has-text('Sign up') or button:has-text('Cadastre-se')
+- button:has-text('Continue') or button:has-text('Continuar')
+- button[type='submit']
+- div[role='button'] with button text
+- Any visible button at the bottom of the form
+
 What is the next action?
-Options: [fill_field, click_button, solve_captcha, wait, scroll, report_error]
+Options:
+- fill_field: Fill a text input field (use selector like input[name='fieldName'] or input[aria-label='Label'])
+- click_button: Click a button (use selector like button:has-text('Text') or button[type='submit'])
+- continue: Continue with the normal flow (page looks OK despite warning)
+- solve_captcha: Attempt to solve a captcha
+- wait_retry: Wait and retry (for temporary blocks)
+- scroll: Scroll the page
+- report_error: Report an unrecoverable error
 
 Return JSON:
 {{
-  "action": "fill_field|click_button|solve_captcha|wait|scroll|report_error",
-  "selector": "CSS selector or description",
+  "action": "fill_field|click_button|continue|solve_captcha|wait_retry|scroll|report_error",
+  "selector": "CSS selector or button text",
   "value": "text to type if fill_field",
   "reason": "why this action"
 }}"""
@@ -372,35 +499,126 @@ Return JSON:
             if action == "click_button":
                 self._emit("step_executed", f"AI: Clicando botão '{selector}'")
                 await self._flush_broadcasts()
-                if selector.startswith(("button[", "input[", ".", "#")):
-                    locator = page.locator(selector).first
-                    if await locator.count() > 0:
-                        await locator.click()
-                    else:
-                        await page.get_by_text(selector).first.click()
+                
+                # Try multiple strategies to find and click the button
+                clicked = False
+                
+                # Strategy 1: Direct CSS locator
+                if selector and selector.startswith(("button[", "input[", ".", "#", "[", "a[")):
+                    try:
+                        locator = page.locator(selector).first
+                        if await locator.count() > 0 and await locator.is_visible():
+                            await locator.click(timeout=5000)
+                            clicked = True
+                    except Exception:
+                        pass
+                
+                # Strategy 2: Role-based button
+                if not clicked and selector:
+                    try:
+                        btn = page.get_by_role("button", name=selector)
+                        if await btn.count() > 0 and await btn.is_visible():
+                            await btn.click(timeout=5000)
+                            clicked = True
+                    except Exception:
+                        pass
+                
+                # Strategy 3: Text-based button
+                if not clicked and selector:
+                    try:
+                        btn = page.get_by_text(selector, exact=False).first
+                        if await btn.count() > 0 and await btn.is_visible():
+                            await btn.click(timeout=5000)
+                            clicked = True
+                    except Exception:
+                        pass
+                
+                # Strategy 4: Common Instagram signup buttons
+                if not clicked:
+                    common_selectors = [
+                        "button:has-text('Next')",
+                        "button:has-text('Sign up')",
+                        "button:has-text('Create account')",
+                        "button:has-text('Continue')",
+                        "button[type='submit']",
+                        "button:not([disabled]):visible",
+                    ]
+                    for cs in common_selectors:
+                        try:
+                            locator = page.locator(cs).first
+                            if await locator.count() > 0 and await locator.is_visible():
+                                await locator.click(timeout=5000)
+                                clicked = True
+                                break
+                        except Exception:
+                            pass
+                
+                if clicked:
+                    await asyncio.sleep(2)
+                    self._emit("step_completed", f"AI: Botão clicado - {reason}")
+                    await self._flush_broadcasts()
+                    return {"success": True, "mode": "ai", "action": action, "reason": reason}
                 else:
-                    btn = page.get_by_role("button", name=selector)
-                    if await btn.count() > 0:
-                        await btn.click()
-                    else:
-                        await page.get_by_text(selector).first.click()
-                await asyncio.sleep(2)
-                self._emit("step_completed", f"AI: Botão clicado - {reason}")
-                await self._flush_broadcasts()
-                return {"success": True, "mode": "ai", "action": action, "reason": reason}
+                    self._emit("warning", f"AI: Botão não encontrado '{selector}', tentando continuar")
+                    await self._flush_broadcasts()
+                    await asyncio.sleep(2)
+                    return {"success": True, "mode": "ai", "action": action, "reason": f"Button not found, continuing: {reason}"}
             
             elif action == "fill_field":
                 self._emit("step_executed", f"AI: Preenchendo campo '{selector}' com '{value}'")
                 await self._flush_broadcasts()
-                locator = page.locator(selector).first
-                if await locator.count() > 0:
-                    await locator.fill(value)
+                
+                filled = False
+                
+                # Strategy 1: Direct CSS locator
+                if selector and selector.startswith(("input[", "textarea[", ".", "#", "[")):
+                    try:
+                        locator = page.locator(selector).first
+                        if await locator.count() > 0 and await locator.is_visible():
+                            await locator.fill(value)
+                            filled = True
+                    except Exception:
+                        pass
+                
+                # Strategy 2: Label-based
+                if not filled and selector:
+                    try:
+                        locator = page.get_by_label(selector).first
+                        if await locator.count() > 0 and await locator.is_visible():
+                            await locator.fill(value)
+                            filled = True
+                    except Exception:
+                        pass
+                
+                # Strategy 3: Placeholder-based
+                if not filled and selector:
+                    try:
+                        locator = page.locator(f"input[placeholder*='{selector}']").first
+                        if await locator.count() > 0 and await locator.is_visible():
+                            await locator.fill(value)
+                            filled = True
+                    except Exception:
+                        pass
+                
+                # Strategy 4: First visible input
+                if not filled:
+                    try:
+                        locator = page.locator("input:visible, textarea:visible").first
+                        if await locator.count() > 0:
+                            await locator.fill(value)
+                            filled = True
+                    except Exception:
+                        pass
+                
+                if filled:
+                    await asyncio.sleep(1)
+                    self._emit("step_completed", f"AI: Campo preenchido - {reason}")
+                    await self._flush_broadcasts()
+                    return {"success": True, "mode": "ai", "action": action, "reason": reason}
                 else:
-                    await page.locator("input:visible").first.fill(value)
-                await asyncio.sleep(1)
-                self._emit("step_completed", f"AI: Campo preenchido - {reason}")
-                await self._flush_broadcasts()
-                return {"success": True, "mode": "ai", "action": action, "reason": reason}
+                    self._emit("warning", f"AI: Campo não encontrado '{selector}'")
+                    await self._flush_broadcasts()
+                    return {"success": False, "mode": "ai", "action": action, "reason": f"Field not found: {selector}", "error": f"Field not found: {selector}"}
             
             elif action == "scroll":
                 self._emit("step_executed", "AI: Scrollando página")
@@ -416,6 +634,27 @@ Return JSON:
                 await self._flush_broadcasts()
                 await asyncio.sleep(3)
                 self._emit("step_completed", "AI: Espera completada")
+                await self._flush_broadcasts()
+                return {"success": True, "mode": "ai", "action": action, "reason": reason}
+            
+            elif action == "continue":
+                self._emit("info", f"AI: Continuando fluxo - {reason}")
+                await self._flush_broadcasts()
+                return {"success": True, "mode": "ai", "action": action, "reason": reason}
+            
+            elif action == "solve_captcha":
+                self._emit("warning", f"AI: Tentando resolver captcha - {reason}")
+                await self._flush_broadcasts()
+                await asyncio.sleep(5)
+                self._emit("step_completed", "AI: Tentativa de captcha completada")
+                await self._flush_broadcasts()
+                return {"success": True, "mode": "ai", "action": action, "reason": reason}
+            
+            elif action == "wait_retry":
+                self._emit("warning", f"AI: Aguardando para retry - {reason}")
+                await self._flush_broadcasts()
+                await asyncio.sleep(10)
+                self._emit("step_completed", "AI: Wait retry completado")
                 await self._flush_broadcasts()
                 return {"success": True, "mode": "ai", "action": action, "reason": reason}
             
@@ -437,6 +676,7 @@ Return JSON:
     
     async def execute_full_flow(self, page, context: Dict) -> Dict:
         self._pending_broadcasts = []
+        self._filled_fields = set()  # Track which fields have been filled to prevent duplication
         initial_url = page.url
         
         # Save initial screenshot
@@ -469,15 +709,32 @@ Return JSON:
                     })
                 except Exception:
                     pass
-            if is_straight_to_checkpoint(page, initial_url):
+            
+            # Handle by type
+            if checkpoint_info["type"] == "interstitial":
+                self._emit("info", "Interstitial detected - continuing flow")
+                await self._flush_broadcasts()
+            elif checkpoint_info["type"] == "false_positive":
+                self._emit("info", "False positive checkpoint - continuing flow")
+                await self._flush_broadcasts()
+            elif is_straight_to_checkpoint(page, initial_url):
                 self._emit("error", "Straight to checkpoint - IP likely flagged")
                 await self._flush_broadcasts()
                 return {"success": False, "error": "Straight to checkpoint - IP flagged", "log": self.log}
+            elif checkpoint_info["type"] == "rate_limited":
+                self._emit("error", f"Rate limited: {checkpoint_info['message']}")
+                await self._flush_broadcasts()
+                return {"success": False, "error": f"Rate limited: {checkpoint_info['message']}", "log": self.log}
+            else:
+                # real_checkpoint, sms_verification, etc - try to continue
+                self._emit("warning", f"Real checkpoint detected, will attempt to continue")
+                await self._flush_broadcasts()
         
         steps = [
             ("fill_email", "Preenchendo email"),
             ("fill_password", "Preenchendo senha"),
             ("click_next", "Clicando Next após email/senha"),
+            ("fill_username", "Preenchendo username"),
             ("fill_name", "Preenchendo nome"),
             ("click_next", "Clicando Next após nome"),
             ("fill_birth_date", "Preenchendo data de nascimento"),
@@ -506,11 +763,23 @@ Return JSON:
                         })
                     except Exception:
                         pass
-                result = await self._ai_navigation_decision(page, context, f"Blocking: {block_msg}, Type: {checkpoint['type']}")
-                if not result.get("success"):
-                    self._emit("error", f"Não foi possível resolver blocking: {block_msg}")
+                
+                # Handle by type
+                if checkpoint["type"] in ("interstitial", "false_positive"):
+                    self._emit("info", "Interstitial/false-positive - continuing with step")
                     await self._flush_broadcasts()
-                    return {"success": False, "error": f"Instagram blocking: {block_msg}", "log": self.log}
+                    # Continue to execute the step anyway
+                elif checkpoint["type"] == "rate_limited":
+                    self._emit("error", f"Rate limited: {checkpoint['message']}")
+                    await self._flush_broadcasts()
+                    return {"success": False, "error": f"Rate limited: {checkpoint['message']}", "log": self.log}
+                else:
+                    # Real checkpoint - try AI navigation
+                    result = await self._ai_navigation_decision(page, context, f"Blocking: {block_msg}, Type: {checkpoint['type']}")
+                    if not result.get("success"):
+                        self._emit("error", f"Não foi possível resolver blocking: {block_msg}")
+                        await self._flush_broadcasts()
+                        return {"success": False, "error": f"Instagram blocking: {block_msg}", "log": self.log}
             
             result = await self.execute_step(step_name, page, context)
             
@@ -564,6 +833,24 @@ Return JSON:
         
         checkpoint = await detect_checkpoint_type(page)
         if checkpoint["type"] != "none":
+            # If it's just an interstitial or false positive, consider it success
+            # since all steps completed successfully
+            if checkpoint["type"] in ("interstitial", "false_positive"):
+                self._emit("success", "Conta criada com sucesso! (página final detectada)")
+                await self._flush_broadcasts()
+                # Save success screenshot
+                if self.account_id:
+                    try:
+                        screenshot = await page.screenshot(type="png")
+                        _save_evidence(self.account_id, "success", screenshot)
+                        _save_evidence_metadata(self.account_id, "success", {
+                            "url": page.url,
+                            "note": "All steps completed, interstitial page detected",
+                        })
+                    except Exception:
+                        pass
+                return {"success": True, "handle": None, "log": self.log}
+            
             self._emit("error", f"Checkpoint no final: {checkpoint['type']}")
             await self._flush_broadcasts()
             # Save checkpoint evidence

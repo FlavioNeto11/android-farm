@@ -51,9 +51,13 @@ data/secrets/*
 *.log.*
 !logs/.gitkeep
 
-# Data
+# Data (except evidence and sessions which are tracked)
 data/*
 !data/.gitkeep
+!data/evidence/
+!data/evidence/**
+!data/sessions/
+!data/sessions/**
 
 # IDEs
 .vscode/

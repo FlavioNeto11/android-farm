@@ -31,11 +31,13 @@ export interface CredentialResponse {
 
 export interface Evidence {
   account_id: string;
-  platform: string;
-  evidence_type: 'screenshot' | 'log';
+  platform?: string;
+  evidence_type: 'screenshot' | 'log' | 'metadata';
   timestamp: string;
   screenshot_url?: string;
   description: string;
+  filename?: string;
+  step?: string;
 }
 
 export interface Proxy {

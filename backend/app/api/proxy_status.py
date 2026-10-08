@@ -10,10 +10,10 @@ router = APIRouter(prefix="/proxy", tags=["proxy"])
 
 @router.get("/status")
 async def get_proxy_status():
-    """Verificar status do proxy configurado"""
+    """Verificar status do proxy com layered fallback"""
     from app.modules.accounts.platforms.instagram.proxy_config import (
-        load_proxy_from_env, get_masked_url, validate_proxy_connection,
-        diagnose_proxy_error, ProxyAuthenticationError, ProxyConnectionError
+        load_proxy_from_env, get_masked_url, layered_proxy_fallback,
+        ProxyAuthenticationError, ProxyConnectionError
     )
     
     proxy_config = load_proxy_from_env()
@@ -22,30 +22,34 @@ async def get_proxy_status():
         return {
             "configured": False,
             "status": "disabled",
+            "proxy_method": "none",
+            "using_proxy": False,
             "message": "Proxy disabled (PROXY_ENABLED=false)",
             "last_check": datetime.now().isoformat()
         }
     
-    result = {
-        "configured": True,
-        "host": proxy_config.host,
-        "port": proxy_config.port,
-        "username": proxy_config.username,
-        "status": "unknown",
-        "last_check": datetime.now().isoformat()
-    }
-    
     try:
-        validate_proxy_connection(proxy_config)
-        result["status"] = "ok"
-        result["message"] = "Proxy connection successful"
-    except (ProxyAuthenticationError, ProxyConnectionError) as e:
-        result["status"] = "error"
-        result["error"] = {
-            "code": "AUTH_FAILED" if isinstance(e, ProxyAuthenticationError) else "CONNECTION_FAILED",
-            "message": str(e),
-            "action_required": diagnose_proxy_error(e)
+        result = layered_proxy_fallback(proxy_config)
+        return {
+            "configured": True,
+            "host": proxy_config.host,
+            "port": proxy_config.port,
+            "proxy_method": result.method,
+            "using_proxy": result.using_proxy,
+            "ip": result.ip,
+            "country": result.country,
+            "status": "ok" if result.using_proxy else "fallback_direct",
+            "message": f"Proxy method: {result.method}" + (f", IP: {result.ip}" if result.ip else ""),
+            "last_check": datetime.now().isoformat()
         }
-        result["fallback_active"] = True
-    
-    return result
+    except (ProxyAuthenticationError, ProxyConnectionError) as e:
+        return {
+            "configured": True,
+            "host": proxy_config.host,
+            "port": proxy_config.port,
+            "proxy_method": "failed",
+            "using_proxy": False,
+            "status": "error",
+            "error": str(e),
+            "last_check": datetime.now().isoformat()
+        }

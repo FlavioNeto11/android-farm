@@ -11,7 +11,7 @@ import uuid
 from datetime import datetime
 
 from app.db import get_db_context
-from app.models import Account, AccountStatus, Proxy as ProxyModel, ProxyStatus as PS
+from app.models import Account, AccountStatus, Credential, CredentialStatus, Proxy as ProxyModel, ProxyStatus as PS
 from app.services.android_persona_client import android_client
 
 logger = logging.getLogger(__name__)
@@ -134,10 +134,16 @@ async def create_account_for_persona(persona_id: str):
                 context_kwargs["proxy_port"] = proxy_config.port
                 context_kwargs["proxy_username"] = proxy_username
                 context_kwargs["proxy_password"] = proxy_config.password
+
+            context = await browser_manager.create_context(**context_kwargs)
+            
+            # Report proxy result
+            if browser_manager.proxy_result:
+                pr = browser_manager.proxy_result
                 await manager.broadcast({
                     "account_id": account_id_str,
                     "type": "step_completed",
-                    "detail": f"Proxy configurado: {proxy_config.host}:{proxy_config.port} (session: {session_id})",
+                    "detail": f"Proxy: {pr.method} (IP: {pr.ip})" if pr.using_proxy else f"Proxy fallback: {pr.method} (IP: {pr.ip})",
                     "timestamp": datetime.utcnow().isoformat()
                 })
 
@@ -172,10 +178,25 @@ async def create_account_for_persona(persona_id: str):
 
             # Use conservative delay config for more human-like behavior
             delay_config = DelayConfig.conservative()
-            flow = HybridInstagramFlow(account_id=account_id_str, delay_config=delay_config)
+            
+            # Callback to save log incrementally to DB
+            def save_log_incrementally(log_entries):
+                try:
+                    with get_db_context() as db_inc:
+                        acc_inc = db_inc.query(Account).filter(Account.id == account.id).first()
+                        if acc_inc:
+                            acc_inc.automation_log = json.dumps(log_entries)
+                            db_inc.commit()
+                except Exception:
+                    pass
+            
+            flow = HybridInstagramFlow(account_id=account_id_str, delay_config=delay_config, log_callback=save_log_incrementally)
+            # Generate username for the flow
+            generated_username = f"{first.lower()}{last.lower()}{number}"
             flow_context = {
                 "email": email,
                 "password": password,
+                "username": generated_username,
                 "first_name": first,
                 "last_name": last,
                 "birth_date": birth_date,
@@ -202,6 +223,22 @@ async def create_account_for_persona(persona_id: str):
                     if result.get("success"):
                         acc.handle = result.get("handle", email)
                         acc.status = AccountStatus.ready
+                        
+                        # Save credentials
+                        from app.security.secret_store import get_secret_store
+                        secret_store = get_secret_store()
+                        secret_ref = secret_store.encrypt(password)
+                        
+                        credential = Credential(
+                            account_id=acc.id,
+                            login_identifier=email,
+                            secret_ref=secret_ref,
+                            status=CredentialStatus.active,
+                            consent_at=datetime.utcnow(),
+                            consent_by="system"
+                        )
+                        db2.add(credential)
+                        
                         await manager.broadcast({
                             "account_id": account_id_str,
                             "type": "complete",
@@ -277,7 +314,7 @@ async def create_account_for_persona(persona_id: str):
 
         finally:
             try:
-                await context.close()
+                await browser_manager.close_context(context, account_id=persona_id)
             except Exception:
                 pass
 

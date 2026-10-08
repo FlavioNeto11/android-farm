@@ -218,18 +218,32 @@ export function ContaDetailPage() {
                 <p className="t-legenda">Nenhuma evidência disponível.</p>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 'var(--sp-3)' }}>
-                  {evidence.filter(e => e.evidence_type === 'screenshot').map((ev) => (
-                    <div key={ev.filename} style={{ position: 'relative' }}>
-                      <img
-                        src={ev.screenshot_url}
-                        alt={ev.description}
-                        style={{ width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-2)' }}
-                      />
-                      <p className="t-legenda" style={{ marginTop: 'var(--sp-1)', fontSize: 'var(--fs-2xs)' }}>
-                        {ev.description}
-                      </p>
-                    </div>
-                  ))}
+                  {(() => {
+                    // Deduplicate by step name, keeping only the latest screenshot per step
+                    const screenshots = evidence.filter(e => e.evidence_type === 'screenshot');
+                    const uniqueSteps = new Map<string, typeof screenshots[0]>();
+                    screenshots.forEach(ev => {
+                      // Extract step name from filename (e.g., "after_fill_email" from "accountid_after_fill_email_timestamp.png")
+                      const parts = ev.filename.split('_');
+                      const stepName = parts.slice(1, -2).join('_'); // Skip account_id prefix and timestamp suffix
+                      const existing = uniqueSteps.get(stepName);
+                      if (!existing || ev.filename > existing.filename) {
+                        uniqueSteps.set(stepName, ev);
+                      }
+                    });
+                    return Array.from(uniqueSteps.values()).map((ev) => (
+                      <div key={ev.filename} style={{ position: 'relative' }}>
+                        <img
+                          src={ev.screenshot_url}
+                          alt={ev.description}
+                          style={{ width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-2)' }}
+                        />
+                        <p className="t-legenda" style={{ marginTop: 'var(--sp-1)', fontSize: 'var(--fs-2xs)' }}>
+                          {ev.description.replace(/^Evidência: [a-f0-9-]+_/, '')}
+                        </p>
+                      </div>
+                    ));
+                  })()}
                 </div>
               )}
             </CardBody>
