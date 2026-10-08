@@ -1,9 +1,9 @@
-import { LayoutDashboard, Users, PlusCircle, Network, Menu, X, type LucideIcon } from 'lucide-react';
+import { LayoutDashboard, Users, PlusCircle, Network, Menu, X, Contact, type LucideIcon } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { useUIStore } from '../stores/ui';
 import { VERSION } from '../version';
 
-type Page = 'painel' | 'contas' | 'criar' | 'proxies';
+type Page = 'painel' | 'contas' | 'criar' | 'proxies' | 'personas';
 
 interface NavItem {
   page: Page;
@@ -14,6 +14,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { page: 'painel', label: 'Painel', icon: LayoutDashboard },
   { page: 'contas', label: 'Contas', icon: Users },
+  { page: 'personas', label: 'Personas', icon: Contact },
   { page: 'criar', label: 'Criar Conta', icon: PlusCircle },
   { page: 'proxies', label: 'Proxies', icon: Network },
 ];

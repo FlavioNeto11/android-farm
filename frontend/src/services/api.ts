@@ -86,4 +86,13 @@ export const api = {
 
   // Health
   health: () => request<{ status: string; version: string; platforms: string[] }>('/health'),
+
+  // Personas
+  listPersonas: () => fetch('/api/personas').then(r => r.json()),
+  getPersona: (id: string) => fetch(`/api/personas/${id}`).then(r => r.json()),
+  createAccountForPersona: (id: string) =>
+    request<{ account_id: string; persona_id: string; email: string; status: string; message: string }>(
+      `/personas/${id}/create-account`,
+      { method: 'POST' },
+    ),
 };

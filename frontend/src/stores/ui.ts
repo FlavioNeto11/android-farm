@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type FarmPage = 'painel' | 'contas' | 'criar' | 'proxies' | 'progress' | 'notfound';
+export type FarmPage = 'painel' | 'contas' | 'criar' | 'proxies' | 'progress' | 'personas' | 'persona-detail' | 'notfound';
 
 interface FarmUiState {
   currentPage: FarmPage;
@@ -26,8 +26,12 @@ function extractIdFromHash(hash: string): { page: FarmPage; id: string | null } 
     const id = clean.slice(9);
     return { page: 'progress', id: id || null };
   }
+  if (clean.startsWith('personas/')) {
+    const id = clean.slice(9);
+    return { page: 'persona-detail', id: id || null };
+  }
   const page = clean.split('/')[0] as FarmPage;
-  if (['painel', 'contas', 'criar', 'proxies', 'progress'].includes(page)) {
+  if (['painel', 'contas', 'criar', 'proxies', 'progress', 'personas', 'persona-detail'].includes(page)) {
     return { page, id: null };
   }
   return { page: 'notfound', id: null };
