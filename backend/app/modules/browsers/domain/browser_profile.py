@@ -71,20 +71,6 @@ class BrowserManager:
         proxy_password: Optional[str] = None,
         viewport_size: Dict = None
     ) -> BrowserContext:
-        """
-        Criar contexto de browser com configurações específicas para conta.
-
-        Args:
-            account_id: ID único da conta (para fingerprint)
-            proxy_host: Host do proxy obrigatório
-            proxy_port: Porta do proxy
-            proxy_username: Usuário do proxy
-            proxy_password: Senha do proxy
-            viewport_size: Tamanho da viewport
-
-        Returns:
-            BrowserContext configurado
-        """
         if not self.playwright:
             await self.start()
 
@@ -93,7 +79,6 @@ class BrowserManager:
             "ignore_https_errors": True,
         }
 
-        # Anti-detection options
         if self.anti_detect:
             context_options["user_agent"] = self._generate_user_agent()
             context_options["locale"] = "en-US"
@@ -101,30 +86,12 @@ class BrowserManager:
 
             fingerprint = self.get_fingerprint(account_id)
 
-            # Settings anti-detect extras (moved to launch args)
-
-            # Storage state persistence per account (only if file exists)
             state_file = f"./data/fingerprint_{fingerprint}.json"
             if self.headless and os.path.exists(state_file):
                 context_options["storage_state"] = state_file
 
             logger.debug(f"Created context with fingerprint {fingerprint}")
 
-        # Proxy configuration
-        if proxy_host and proxy_port:
-            proxy_config = {
-                "server": f"http://{proxy_host}:{proxy_port}"
-            }
-
-            if proxy_username and proxy_password:
-                proxy_config["username"] = proxy_username
-                proxy_config["password"] = proxy_password
-
-            context_options["proxy"] = proxy_config
-
-            logger.debug(f"Context configured with proxy {proxy_host}:{proxy_port}")
-
-        # Create context
         launch_args = [
             "--disable-blink-features=AutomationControlled",
             "--disable-dev-shm-usage",
@@ -139,8 +106,16 @@ class BrowserManager:
         if self.anti_detect:
             launch_kwargs["ignore_default_args"] = ["--enable-automation"]
 
-        browser = await self.playwright.chromium.launch(**launch_kwargs)
+        if proxy_host and proxy_port:
+            proxy_server = f"http://{proxy_host}:{proxy_port}"
+            launch_kwargs["proxy"] = {
+                "server": proxy_server,
+                "username": proxy_username or "",
+                "password": proxy_password or "",
+            }
+            logger.info(f"Browser launch configured with proxy {proxy_host}:{proxy_port}")
 
+        browser = await self.playwright.chromium.launch(**launch_kwargs)
         context = await browser.new_context(**context_options)
         return context
 

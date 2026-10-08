@@ -15,6 +15,7 @@ from app.modules.accounts.platforms.instagram.element_detection import (
     is_straight_to_checkpoint,
 )
 from app.modules.accounts.platforms.instagram.human_behavior import HumanBehaviorSimulator
+from app.modules.accounts.platforms.instagram.proxy_config import load_proxy_from_env, get_proxy_url, get_masked_url, validate_proxy_connection
 
 
 class HybridInstagramFlow:
@@ -45,6 +46,14 @@ class HybridInstagramFlow:
         )
         self.model = os.getenv("VENICE_MODEL", "openai-gpt-4o-2024-11-20")
         self.log = []
+        self.proxy_config = load_proxy_from_env()
+        if self.proxy_config:
+            self._log(f"Proxy enabled: {get_masked_url(self.proxy_config)}")
+            if not validate_proxy_connection(self.proxy_config):
+                self._log("WARNING: Proxy validation failed, continuing without proxy")
+                self.proxy_config = None
+        else:
+            self._log("Proxy disabled - running without proxy")
     
     async def execute_step(self, step_name: str, page, context: Dict) -> Dict:
         action_mode = self.DETERMINISTIC_ACTIONS.get(step_name, "ai")

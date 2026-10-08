@@ -47,6 +47,7 @@ async def request_account_creation(request: AccountCreationRequest):
                     from app.modules.accounts.platforms.instagram.hybrid_flow import HybridInstagramFlow
                     from app.modules.accounts.platforms.instagram.human_behavior import HumanBehaviorSimulator
                     from app.modules.browsers.domain.browser_profile import get_browser_manager
+                    from app.modules.accounts.platforms.instagram.proxy_config import load_proxy_from_env, get_proxy_url
                     
                     first_names = ["maria", "joao", "ana", "pedro", "carla", "lucas", "julia", "gabriel", "rafael", "camila"]
                     last_names = ["silva", "santos", "oliveira", "pereira", "costa", "ferreira", "almeida", "rocha"]
@@ -62,10 +63,19 @@ async def request_account_creation(request: AccountCreationRequest):
                     
                     browser_manager = get_browser_manager()
                     viewport = HumanBehaviorSimulator.get_random_viewport()
-                    context = await browser_manager.create_context(
-                        account_id=account.profile_id,
-                        viewport_size=viewport
-                    )
+                    
+                    proxy_config = load_proxy_from_env()
+                    context_kwargs = {
+                        "account_id": account.profile_id,
+                        "viewport_size": viewport,
+                    }
+                    if proxy_config:
+                        context_kwargs["proxy_host"] = proxy_config.host
+                        context_kwargs["proxy_port"] = proxy_config.port
+                        context_kwargs["proxy_username"] = proxy_config.username
+                        context_kwargs["proxy_password"] = proxy_config.password
+                    
+                    context = await browser_manager.create_context(**context_kwargs)
                     page = await context.new_page()
                     
                     user_agent = HumanBehaviorSimulator.get_random_user_agent()
