@@ -178,10 +178,10 @@ class FullAccountSignup:
                     timeout=timeout
                 )
 
-                instagram_handle = result.get("handle")
+                instagram_handle = result.handle
 
-                if not result.get("success", False):
-                    error_msg = result.get("error_message") or "Unknown error"
+                if not result.success:
+                    error_msg = result.error_message or "Unknown error"
                     logger.warning(f"Instagram account creation returned false: {error_msg}")
                     if retry < max_retries - 1:
                         await asyncio.sleep(retry_delay)
@@ -200,7 +200,7 @@ class FullAccountSignup:
                     return {
                         "success": True,
                         "handle": instagram_handle,
-                        "password": result["password"]
+                        "password": result.password
                     }
 
                 logger.info(f"Verifying Instagram account: {instagram_handle}")
@@ -212,7 +212,7 @@ class FullAccountSignup:
                     return {
                         "success": True,
                         "handle": instagram_handle,
-                        "password": result["password"]
+                        "password": result.password
                     }
                 else:
                     verification_error = verification_result.get("error", "Unknown verification error")
@@ -222,7 +222,7 @@ class FullAccountSignup:
                     return {
                         "success": True,
                         "handle": instagram_handle,
-                        "password": result["password"]
+                        "password": result.password
                     }
 
             except Exception as e:
