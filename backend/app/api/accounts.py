@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from typing import List, Optional
+import asyncio
 import logging
 import os
 
@@ -29,25 +30,115 @@ async def request_account_creation(request: AccountCreationRequest):
     try:
         with get_db_context() as db:
             service = get_account_service()
-            account = await service.request_account_creation(
-                db=db,
-                profile_id=request.profile_id,
-                platforms=request.platforms,
-                persona_data=request.persona_data
-            )
-
-            if not account:
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="No valid account platforms found"
+            
+            if "instagram" in request.platforms and len(request.platforms) == 1:
+                account = Account(
+                    platform="instagram",
+                    profile_id=request.profile_id,
+                    status=AccountStatus.creating
+                )
+                db.add(account)
+                db.commit()
+                db.refresh(account)
+                
+                async def create_instagram_with_ai():
+                    import random
+                    headless = os.getenv("BROWSER_HEADLESS", "false").lower() == "true"
+                    from app.modules.automation.ai_automation import AIAutomation
+                    from app.modules.browsers.domain.browser_profile import get_browser_manager
+                    
+                    first_names = ["maria", "joao", "ana", "pedro", "carla", "lucas", "julia", "gabriel", "rafael", "camila"]
+                    last_names = ["silva", "santos", "oliveira", "pereira", "costa", "ferreira", "almeida", "rocha"]
+                    domains = ["gmail.com", "outlook.com", "yahoo.com", "hotmail.com"]
+                    
+                    random.seed(hash(account.profile_id) % (2**32))
+                    first = random.choice(first_names)
+                    last = random.choice(last_names)
+                    number = random.randint(100, 999)
+                    domain = random.choice(domains)
+                    realistic_email = f"{first}.{last}{number}@{domain}"
+                    realistic_password = f"{first.capitalize()}{last.capitalize()}{number}!"
+                    
+                    browser_manager = get_browser_manager()
+                    context = await browser_manager.create_context(account_id=account.profile_id)
+                    page = await context.new_page()
+                    
+                    try:
+                        automation = AIAutomation()
+                        result = await asyncio.wait_for(
+                            automation.execute_signup_flow(
+                                page=page,
+                                persona_data=PersonaData(
+                                    profile_id=account.profile_id,
+                                    **request.persona_data
+                                ),
+                                email=realistic_email,
+                                password=realistic_password,
+                            ),
+                            timeout=600
+                        )
+                        
+                        with get_db_context() as db2:
+                            acc = db2.query(Account).filter(Account.id == account.id).first()
+                            if acc:
+                                if result["success"]:
+                                    acc.handle = result["handle"]
+                                    acc.status = AccountStatus.ready
+                                else:
+                                    acc.status = AccountStatus.failed
+                                    acc.error_message = result.get("error", "AI automation failed")
+                                db2.commit()
+                    
+                    except asyncio.TimeoutError:
+                        with get_db_context() as db2:
+                            acc = db2.query(Account).filter(Account.id == account.id).first()
+                            if acc:
+                                acc.status = AccountStatus.failed
+                                acc.error_message = "Automação interrompida por timeout (10 minutos)"
+                                db2.commit()
+                    
+                    except Exception as e:
+                        import traceback
+                        error_detail = f"Exception during automation: {str(e)}"
+                        logger.error(f"AI automation failed: {error_detail}\n{traceback.format_exc()}")
+                        with get_db_context() as db2:
+                            acc = db2.query(Account).filter(Account.id == account.id).first()
+                            if acc:
+                                acc.status = AccountStatus.failed
+                                acc.error_message = error_detail
+                                db2.commit()
+                    
+                    finally:
+                        await context.close()
+                
+                asyncio.create_task(create_instagram_with_ai())
+                
+                return {
+                    "account_id": account.id,
+                    "platform": account.platform,
+                    "status": account.status.value,
+                    "message": "Account creation request submitted - AI automation started"
+                }
+            else:
+                account = await service.request_account_creation(
+                    db=db,
+                    profile_id=request.profile_id,
+                    platforms=request.platforms,
+                    persona_data=request.persona_data
                 )
 
-            return {
-                "account_id": account.id,
-                "platform": account.platform,
-                "status": account.status.value,
-                "message": "Account creation request submitted"
-            }
+                if not account:
+                    raise HTTPException(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail="No valid account platforms found"
+                    )
+
+                return {
+                    "account_id": account.id,
+                    "platform": account.platform,
+                    "status": account.status.value,
+                    "message": "Account creation request submitted"
+                }
 
     except HTTPException:
         raise

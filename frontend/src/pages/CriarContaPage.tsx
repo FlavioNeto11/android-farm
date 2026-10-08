@@ -6,6 +6,7 @@ import { Button } from '../components/Button';
 import { Card, CardBody } from '../components/Card';
 import { Banner } from '../components/Banner';
 import { TextInput, Select } from '../components/Field';
+import { AutomationProgress } from '../components/AutomationProgress';
 import { ArrowLeft, CheckCircle, LoaderCircle, AlertCircle } from 'lucide-react';
 
 interface FormErrors {
@@ -150,6 +151,10 @@ export function CriarContaPage() {
           <CheckCircle size={16} />
           Conta criada com sucesso! Redirecionando...
         </Banner>
+      )}
+
+      {loading && success && platforms.includes('instagram') && (
+        <AutomationProgress accountId={success.account_id} />
       )}
 
       <form onSubmit={handleSubmit}>

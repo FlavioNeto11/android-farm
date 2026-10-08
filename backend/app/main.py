@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
+from dotenv import load_dotenv
 from app.config import settings
 from app.db import init_db, seed_platform_configs
 from app.security.secret_store import init_secret_store
@@ -10,8 +11,11 @@ from app.modules.proxies.domain.proxy import init_proxy_manager
 from app.modules.browsers.domain.browser_profile import init_browser_manager
 from app.api.accounts import router as accounts_router
 from app.api.proxies import router as proxies_router
+from app.api.websocket import router as websocket_router
 import logging
 import os
+
+load_dotenv()
 
 os.makedirs("./data", exist_ok=True)
 os.makedirs("./logs", exist_ok=True)
@@ -84,6 +88,7 @@ app.add_middleware(
 # API routes
 app.include_router(accounts_router, prefix="/api")
 app.include_router(proxies_router, prefix="/api")
+app.include_router(websocket_router, prefix="/api")
 
 # Serve evidence files
 @app.get("/api/evidence/{filename}")
