@@ -180,9 +180,9 @@ class FullAccountSignup:
 
                 instagram_handle = result.handle
 
-                if not result.success:
-                    error_msg = result.error_message or "Unknown error"
-                    logger.warning(f"Instagram account creation returned false: {error_msg}")
+                if not result.success or instagram_handle is None:
+                    error_msg = result.error_message or "Account creation failed or handle extraction returned None"
+                    logger.error(f"Instagram account creation failed: {error_msg}")
                     if retry < max_retries - 1:
                         await asyncio.sleep(retry_delay)
                         continue
@@ -194,6 +194,21 @@ class FullAccountSignup:
                         }
 
                 logger.info(f"Instagram account created with handle: {instagram_handle}")
+
+                # Check if handle looks like a fake/generated handle
+                if instagram_handle and ("_test" in instagram_handle.lower() or len(instagram_handle) < 4):
+                    logger.warning(f"Handle looks fake/generated: {instagram_handle}")
+                    logger.error(f"Instagram account creation appears to have failed - handle is not valid")
+                    if retry < max_retries - 1:
+                        await asyncio.sleep(retry_delay)
+                        retry_delay *= 2
+                        continue
+                    else:
+                        return {
+                            "success": False,
+                            "handle": None,
+                            "password": None
+                        }
 
                 if not verifier.verify_accounts:
                     logger.info("Account verification disabled, skipping verification")
@@ -217,12 +232,11 @@ class FullAccountSignup:
                 else:
                     verification_error = verification_result.get("error", "Unknown verification error")
                     logger.warning(f"Instagram account verification failed: {verification_error}")
-                    logger.warning(f"Using handle anyway: {instagram_handle}")
-
+                    logger.error(f"Not marking account as ready due to verification failure")
                     return {
-                        "success": True,
-                        "handle": instagram_handle,
-                        "password": result.password
+                        "success": False,
+                        "handle": None,
+                        "password": None
                     }
 
             except Exception as e:

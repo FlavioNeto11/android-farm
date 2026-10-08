@@ -77,12 +77,63 @@ class InstagramAccountVerifier:
                             status = response.status
 
                             if status == 200:
-                                logger.info(f"Account verified: {handle}")
+                                logger.info(f"Received HTTP 200 for {handle}")
+
+                                logger.debug(f"Content snippet: {content[:300]}")
+
+                                unavailable_keywords = [
+                                    'página não encontrada',
+                                    'sorry, this page isn', 'available',
+                                    'profile isn', 'available',
+                                    'sorry, this page isnt available',
+                                    'instagram does not exist',
+                                    "page isn't available",
+                                    'this page is unavailable',
+                                    "sorry this page isn't available"
+                                ]
+
+                                is_unavailable = content and any(keyword in content.lower() for keyword in unavailable_keywords)
+
+                                if is_unavailable:
+                                    logger.info(f"Profile not found or hidden - content contains unavailable message")
+                                    return {
+                                        "success": True,
+                                        "verified": False,
+                                        "verified_at": asyncio.get_event_loop().time(),
+                                        "error": "Profile not found or hidden",
+                                        "status": status,
+                                        "content_sample": content[:200]
+                                    }
+
+                                profile_indicators = [
+                                    ' posts',
+                                    ' posts counter',
+                                    'followers',
+                                    'following',
+                                    'po.sts',
+                                    'po.st',
+                                    'dir.lo'
+                                ]
+
+                                has_profile_indicators = content and any(indicator in content.lower() for indicator in profile_indicators)
+
+                                if has_profile_indicators:
+                                    logger.info(f"Profile indicators detected in content - likely exists")
+                                    return {
+                                        "success": True,
+                                        "verified": True,
+                                        "verified_at": asyncio.get_event_loop().time(),
+                                        "error": None,
+                                        "status": status,
+                                        "content_sample": content[:300]
+                                    }
+
+                                logger.warning(f"HTTP 200 but cannot confirm profile exists - no indicators found")
                                 return {
                                     "success": True,
-                                    "verified": True,
+                                    "verified": False,
                                     "verified_at": asyncio.get_event_loop().time(),
-                                    "error": None,
+                                    "error": "HTTP 200 but cannot confirm profile exists",
                                     "status": status,
                                     "content_sample": content[:200]
                                 }

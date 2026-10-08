@@ -5,6 +5,7 @@ import random
 import string
 import logging
 import re
+from typing import Optional, Dict
 from datetime import datetime
 
 from app.modules.accounts.domain.account import PersonaData, AccountResult
@@ -58,17 +59,12 @@ class InstagramSignup:
             ("fill_name", lambda: self._fill_name(page, persona_data)),
             ("fill_birth_date", lambda: self._fill_birth_date(page, persona_data)),
             ("complete_signup", lambda: self._complete_signup(page)),
-            ("extract_handle", lambda: self._extract_instagram_handle(page, email, persona_data))
         ]
 
         for step_name, step_func in steps:
             try:
                 logger.info(f"Executing step: {step_name}")
-                if step_name == "extract_handle":
-                    result = await step_func()
-                    instagram_handle = result
-                else:
-                    await step_func()
+                await step_func()
             except Exception as e:
                 error_msg = f"Failed at step {step_name}: {e}"
                 duration = (datetime.utcnow() - start_time).total_seconds()
@@ -99,6 +95,20 @@ class InstagramSignup:
 
         try:
             instagram_handle = await self._extract_instagram_handle(page, email, persona_data)
+
+            if not instagram_handle:
+                error_msg = "Failed to extract Instagram handle - all extraction strategies failed"
+                logger.error(error_msg)
+                return AccountResult(
+                    success=False,
+                    handle=None,
+                    login_identifier=email,
+                    password=password,
+                    credential_ref=None,
+                    error_message=error_msg,
+                    verification_needed=True
+                )
+
         except Exception as e:
             error_msg = f"Failed to extract Instagram handle: {e}"
             logger.error(error_msg)
@@ -113,7 +123,7 @@ class InstagramSignup:
             )
 
         duration = (datetime.utcnow() - start_time).total_seconds()
-        logger.info(f"Instagram signup completed successfully for: {instagram_handle} ({duration:.2f}s)")
+        logger.info(f"Instagram signup completed for handle: {instagram_handle} ({duration:.2f}s)")
 
         return AccountResult(
             success=True,
@@ -209,49 +219,7 @@ class InstagramSignup:
         """Delay aleatório"""
         await asyncio.sleep(random.uniform(min_sec, max_sec))
 
-    async def _extract_from_profile_page(self, page: Page, expected_username: str) -> str:
-        """Extrair username da página de perfil edit."""
-        try:
-            await page.goto(f"https://www.instagram.com/{expected_username}/", wait_until="load", timeout=15000)
-            await self._random_delay(2, 4)
-
-            page_title = await page.title()
-            logger.info(f"Profile page title: {page_title}")
-
-            headings = page.locator('h1, h2')
-            count = await headings.count()
-            for i in range(count):
-                text = await headings.nth(i).inner_text()
-                if text and text.strip():
-                    text = text.strip().replace("@", "").replace("·", "")
-                    if re.match(r'^[a-zA-Z0-9_.]+$', text):
-                        return text
-
-            desc = await page.locator('meta[name="description"]').get_attribute("content")
-            if desc:
-                match = re.search(r'instagram\.com/([a-zA-Z0-9_.]+)', desc)
-                if match:
-                    username = match.group(1)
-                    if username and re.match(r'^[a-zA-Z0-9_.]+$', username):
-                        return username
-
-        except Exception as e:
-            logger.warning(f"Could not extract from profile page: {e}")
-
-        return None
-
-    async def _generate_handle_from_persona(self, persona_data: PersonaData) -> str:
-        """Gerar handle a partir dos dados da persona."""
-        first = persona_data.first_name or "user"
-        last = persona_data.last_name or "test"
-
-        base = f"{first.lower()}{last.lower()}_test"
-        if len(base) > 30:
-            base = base[:30]
-
-        return base
-
-    async def _extract_instagram_handle(self, page: Page, fallback_email: str, persona_data: PersonaData = None) -> str:
+    async def _extract_instagram_handle(self, page: Page, fallback_email: str, persona_data: PersonaData = None) -> Optional[str]:
         """
         Extrair o @ real do Instagram após criação da conta.
         Tenta múltiplas estratégias de fallback para extrair o username real.
@@ -265,7 +233,7 @@ class InstagramSignup:
                 candidate = match.group(1)
                 if candidate and candidate not in ('accounts', 'explore', 'reels', 'direct', 'policies'):
                     logger.info(f"Found username in URL: {candidate}")
-                    return candidate
+                    username = candidate
 
         except Exception as e:
             logger.warning(f"Could not extract from URL: {e}")
@@ -280,7 +248,7 @@ class InstagramSignup:
                 candidate = match.group(1)
                 if candidate and candidate not in ('accounts', 'explore', 'reels', 'direct'):
                     logger.info(f"Found username in URL after nav to edit: {candidate}")
-                    return candidate
+                    username = candidate
 
         except Exception as e:
             logger.warning(f"Could not navigate to edit profile: {e}")
@@ -291,10 +259,14 @@ class InstagramSignup:
             for i in range(count):
                 text = await headings.nth(i).inner_text()
                 if text and text.strip():
+                    # Check if text looks like a username
                     text = text.strip().replace("@", "").replace("·", "")
-                    if re.match(r'^[a-zA-Z0-9_.]+$', text):
+                    if re.match(r'^[a-zA-Z0-9_.]{3,30}$', text):
+                        if text.startswith('@'):
+                            text = text[1:]
                         logger.info(f"Found username in heading: {text}")
-                        return text
+                        username = text
+                        break
 
         except Exception as e:
             logger.warning(f"Could not extract from heading: {e}")
@@ -305,7 +277,7 @@ class InstagramSignup:
                 match = re.search(r'instagram\.com/([a-zA-Z0-9_.]+)', desc)
                 if match:
                     username = match.group(1)
-                    if username and re.match(r'^[a-zA-Z0-9_.]+$', username):
+                    if username and re.match(r'^[a-zA-Z0-9_.]{3,30}$', username):
                         logger.info(f"Found username in meta description: {username}")
                         return username
         except Exception as e:
@@ -320,13 +292,10 @@ class InstagramSignup:
         except Exception as e:
             logger.warning(f"Could not extract from profile page: {e}")
 
-        try:
-            if persona_data:
-                username = await self._generate_handle_from_persona(persona_data)
-                logger.info(f"Generated username from persona: {username}")
-                return username
-        except Exception as e:
-            logger.warning(f"Could not generate handle from persona: {e}")
-
-        logger.warning(f"All extraction strategies failed, falling back to email: {fallback_email}")
-        return fallback_email
+        if username:
+            logger.info(f"Successfully extracted username: {username}")
+            return username
+        else:
+            logger.warning(f"All extraction strategies failed for email: {fallback_email}")
+            logger.warning("Returning None - cannot extract Instagram handle")
+            return None
