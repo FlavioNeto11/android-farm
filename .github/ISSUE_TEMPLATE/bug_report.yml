@@ -1,0 +1,46 @@
+name: Relatar um bug
+description: Informe um problema reproduzível sem incluir dados sensíveis.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: "Não inclua senhas, tokens, chaves, dados pessoais, capturas com informações privadas ou logs contendo segredos. Use exemplos sintéticos."
+  - type: textarea
+    id: description
+    attributes:
+      label: Descrição
+      description: O que aconteceu?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Passos para reproduzir
+      description: Liste os passos e use dados fictícios.
+      placeholder: |
+        1. Inicie a aplicação com configuração de teste
+        2. Acesse ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Resultado esperado
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Resultado observado
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Ambiente
+      description: Sistema operacional e versões de Python/Node, sem informações privadas.
+    validations:
+      required: false
