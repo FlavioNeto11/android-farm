@@ -44,7 +44,7 @@ async def request_account_creation(request: AccountCreationRequest):
                 async def create_instagram_with_ai():
                     import random
                     headless = os.getenv("BROWSER_HEADLESS", "false").lower() == "true"
-                    from app.modules.automation.ai_automation import AIAutomation
+                    from app.modules.accounts.platforms.instagram.hybrid_flow import HybridInstagramFlow
                     from app.modules.browsers.domain.browser_profile import get_browser_manager
                     
                     first_names = ["maria", "joao", "ana", "pedro", "carla", "lucas", "julia", "gabriel", "rafael", "camila"]
@@ -64,17 +64,21 @@ async def request_account_creation(request: AccountCreationRequest):
                     page = await context.new_page()
                     
                     try:
-                        automation = AIAutomation()
+                        flow = HybridInstagramFlow()
+                        
+                        await page.goto("https://www.instagram.com/accounts/emailsignup/", wait_until="domcontentloaded")
+                        await flow._broadcast("navigating", "Indo para página de signup do Instagram")
+                        
+                        flow_context = {
+                            "email": realistic_email,
+                            "password": realistic_password,
+                            "first_name": request.persona_data.get("first_name", first),
+                            "last_name": request.persona_data.get("last_name", last),
+                            "birth_date": request.persona_data.get("birth_date", "1995-01-01"),
+                        }
+                        
                         result = await asyncio.wait_for(
-                            automation.execute_signup_flow(
-                                page=page,
-                                persona_data=PersonaData(
-                                    profile_id=account.profile_id,
-                                    **request.persona_data
-                                ),
-                                email=realistic_email,
-                                password=realistic_password,
-                            ),
+                            flow.execute_full_flow(page, flow_context),
                             timeout=600
                         )
                         
@@ -82,11 +86,11 @@ async def request_account_creation(request: AccountCreationRequest):
                             acc = db2.query(Account).filter(Account.id == account.id).first()
                             if acc:
                                 if result["success"]:
-                                    acc.handle = result["handle"]
+                                    acc.handle = result.get("handle", realistic_email)
                                     acc.status = AccountStatus.ready
                                 else:
                                     acc.status = AccountStatus.failed
-                                    acc.error_message = result.get("error", "AI automation failed")
+                                    acc.error_message = result.get("error", "Hybrid automation failed")
                                 db2.commit()
                     
                     except asyncio.TimeoutError:
