@@ -209,30 +209,31 @@ export function ContaDetailPage() {
           )}
 
           {/* Evidence Screenshots */}
-          {evidence.length > 0 && (
-            <Card>
-              <CardBody>
-                <h2 className="t-titulo-secao" style={{ marginBottom: 'var(--sp-4)' }}>
-                  Evidências
-                </h2>
-                {evidence.map((ev) => (
-                  <div key={ev.evidence_type} style={{ marginBottom: 'var(--sp-4)' }}>
-                    {ev.screenshot_url ? (
-                      <EvidenceViewer
-                        email={credentials?.email ?? ''}
-                        password={credentials?.password ?? ''}
-                        platform={ev.platform}
-                        screenshotUrl={ev.screenshot_url}
-                        description={ev.description}
+          <Card>
+            <CardBody>
+              <h2 className="t-titulo-secao" style={{ marginBottom: 'var(--sp-4)' }}>
+                Evidências
+              </h2>
+              {evidence.length === 0 ? (
+                <p className="t-legenda">Nenhuma evidência disponível.</p>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 'var(--sp-3)' }}>
+                  {evidence.filter(e => e.evidence_type === 'screenshot').map((ev) => (
+                    <div key={ev.filename} style={{ position: 'relative' }}>
+                      <img
+                        src={ev.screenshot_url}
+                        alt={ev.description}
+                        style={{ width: '100%', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-2)' }}
                       />
-                    ) : (
-                      <Banner tone="info">{ev.description}</Banner>
-                    )}
-                  </div>
-                ))}
-              </CardBody>
-            </Card>
-          )}
+                      <p className="t-legenda" style={{ marginTop: 'var(--sp-1)', fontSize: 'var(--fs-2xs)' }}>
+                        {ev.description}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardBody>
+          </Card>
 
           {/* Automation Log */}
           {automationLog.length > 0 && (

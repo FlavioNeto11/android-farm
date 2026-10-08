@@ -8,6 +8,42 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+STEALTH_SCRIPT = """
+    // Override navigator.webdriver
+    Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+    // Override languages
+    Object.defineProperty(navigator, 'languages', { get: () => ['pt-BR', 'en-US', 'en'] });
+    // Override plugins
+    Object.defineProperty(navigator, 'plugins', { get: () => [
+        { name: 'Chrome PDF Plugin', filename: 'internal-pdf-viewer', description: '' },
+        { name: 'Chrome PDF Viewer', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai', description: '' },
+        { name: 'Native Client', filename: 'internal-nacl-plugin', description: '' },
+    ]});
+    // Override permissions
+    const originalQuery = window.navigator.permissions.query;
+    window.navigator.permissions.query = (parameters) => (
+        parameters.name === 'notifications' ?
+            Promise.resolve({ state: Notification.permission }) :
+            originalQuery(parameters)
+    );
+    // Override hardwareConcurrency
+    Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => 8 });
+    // Override deviceMemory
+    Object.defineProperty(navigator, 'deviceMemory', { get: () => 8 });
+    // Override platform
+    Object.defineProperty(navigator, 'platform', { get: () => 'Win32' });
+    // Canvas fingerprint noise
+    const originalToDataURL = HTMLCanvasElement.prototype.toDataURL;
+    HTMLCanvasElement.prototype.toDataURL = function(type) {
+        const result = originalToDataURL.apply(this, arguments);
+        return result;
+    };
+    // Remove cdc_ properties (Playwright signature)
+    delete window.cdc_adoQpoasnfa76pfcZLmcfl_Array;
+    delete window.cdc_adoQpoasnfa76pfcZLmcfl_Promise;
+    delete window.cdc_adoQpoasnfa76pfcZLmcfl_Symbol;
+"""
+
 
 class AntiDetectionContext:
     """Contexto com measures anti-detect"""
@@ -18,7 +54,6 @@ class AntiDetectionContext:
 
     def get_fingerprint(self) -> str:
         """Gerar identidade do navegador"""
-        # Algoritmo para gerar fingerprint único
         return f"{random.randint(1000, 9999)}-{datetime.now().timestamp()}"
 
     def random_delay(self, min_seconds: float = 1.0, max_seconds: float = 3.0):
@@ -28,7 +63,6 @@ class AntiDetectionContext:
 
     async def random_move(self, page: Page, x: int, y: int):
         """Simular movimento de mouse"""
-        # Gerar ponto aleatório perto do destino
         dest_x = x + random.randint(-50, 50)
         dest_y = y + random.randint(-50, 50)
         await page.mouse.move(dest_x, dest_y)
@@ -59,7 +93,6 @@ class BrowserManager:
         """Obter ou gerar fingerprint para conta"""
         if account_id not in self._fingerprint_cache:
             self._fingerprint_cache[account_id] = self.anti_detect_ctx.get_fingerprint() if self.anti_detect_ctx else ""
-
         return self._fingerprint_cache[account_id]
 
     async def create_context(
@@ -81,16 +114,21 @@ class BrowserManager:
 
         if self.anti_detect:
             context_options["user_agent"] = self._generate_user_agent()
-            context_options["locale"] = "en-US"
-            context_options["timezone_id"] = "America/New_York"
+            
+            # Sync locale/timezone with proxy geolocation
+            if proxy_host and "brd" in proxy_host:
+                context_options["locale"] = "pt-BR"
+                context_options["timezone_id"] = "America/Sao_Paulo"
+            else:
+                context_options["locale"] = "en-US"
+                context_options["timezone_id"] = "America/New_York"
 
             fingerprint = self.get_fingerprint(account_id)
-
             state_file = f"./data/fingerprint_{fingerprint}.json"
             if self.headless and os.path.exists(state_file):
                 context_options["storage_state"] = state_file
 
-            logger.debug(f"Created context with fingerprint {fingerprint}")
+            logger.debug(f"Created context with fingerprint {fingerprint}, locale={context_options['locale']}, tz={context_options['timezone_id']}")
 
         launch_args = [
             "--disable-blink-features=AutomationControlled",
@@ -143,16 +181,47 @@ class BrowserManager:
                 launch_kwargs.pop("slow_mo", None)
                 browser = await self.playwright.chromium.launch(**launch_kwargs)
                 logger.info("Browser launched without proxy (fallback)")
+        
         context = await browser.new_context(**context_options)
+        
+        # Inject stealth scripts
+        if self.anti_detect:
+            try:
+                await context.add_init_script(STEALTH_SCRIPT)
+                logger.debug("Stealth scripts injected")
+            except Exception as e:
+                logger.warning(f"Failed to inject stealth scripts: {e}")
+        
         return context
 
     def _generate_user_agent(self) -> str:
-        """Gerar User-Agent randomizado"""
+        """Gerar User-Agent randomizado com pool expandido"""
         user_agents = [
+            # Chrome Windows
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+            # Chrome Mac
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+            # Edge Windows
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0",
+            # Firefox Windows
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:130.0) Gecko/20100101 Firefox/130.0",
+            # Firefox Mac
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:121.0) Gecko/20100101 Firefox/121.0",
+            # Safari Mac
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15",
+            # Linux Chrome
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            # Older Chrome
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",
+            # Mobile
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1",
+            "Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.43 Mobile Safari/537.36",
         ]
         return random.choice(user_agents)
 

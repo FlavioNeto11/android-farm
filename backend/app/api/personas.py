@@ -7,6 +7,7 @@ import os
 import random
 import sys
 import threading
+import uuid
 from datetime import datetime
 
 from app.db import get_db_context
@@ -68,6 +69,7 @@ async def create_account_for_persona(persona_id: str):
         db.refresh(account)
 
     account_id_str = str(account.id)
+    session_id = f"session-{uuid.uuid4().hex[:12]}"
 
     def run_automation_sync():
         """Run Playwright automation in a separate thread with ProactorEventLoop"""
@@ -78,14 +80,14 @@ async def create_account_for_persona(persona_id: str):
         asyncio.set_event_loop(loop)
         try:
             loop.run_until_complete(_run_instagram_automation(
-                account_id_str, persona_id, first, last, email, password, birth_date
+                account_id_str, persona_id, first, last, email, password, birth_date, session_id
             ))
         finally:
             loop.close()
 
-    async def _run_instagram_automation(account_id_str, persona_id, first, last, email, password, birth_date):
+    async def _run_instagram_automation(account_id_str, persona_id, first, last, email, password, birth_date, session_id):
         from app.modules.accounts.platforms.instagram.hybrid_flow import HybridInstagramFlow
-        from app.modules.accounts.platforms.instagram.human_behavior import HumanBehaviorSimulator
+        from app.modules.accounts.platforms.instagram.human_behavior import HumanBehaviorSimulator, DelayConfig
         from app.modules.accounts.platforms.instagram.proxy_config import load_proxy_from_env, ProxyConfig
         from app.modules.browsers.domain.browser_profile import get_browser_manager
         from app.api.websocket_manager import manager
@@ -123,14 +125,19 @@ async def create_account_for_persona(persona_id: str):
                 "viewport_size": viewport,
             }
             if proxy_config:
+                # Add unique session ID for Bright Data rotating proxy
+                proxy_username = proxy_config.username
+                if "brd" in proxy_config.host and "session" not in proxy_username.lower():
+                    proxy_username = f"{proxy_username}-session-{session_id}"
+                
                 context_kwargs["proxy_host"] = proxy_config.host
                 context_kwargs["proxy_port"] = proxy_config.port
-                context_kwargs["proxy_username"] = proxy_config.username
+                context_kwargs["proxy_username"] = proxy_username
                 context_kwargs["proxy_password"] = proxy_config.password
                 await manager.broadcast({
                     "account_id": account_id_str,
                     "type": "step_completed",
-                    "detail": f"Proxy configurado: {proxy_config.host}:{proxy_config.port}",
+                    "detail": f"Proxy configurado: {proxy_config.host}:{proxy_config.port} (session: {session_id})",
                     "timestamp": datetime.utcnow().isoformat()
                 })
 
@@ -163,7 +170,9 @@ async def create_account_for_persona(persona_id: str):
                 "timestamp": datetime.utcnow().isoformat()
             })
 
-            flow = HybridInstagramFlow(account_id=account_id_str)
+            # Use conservative delay config for more human-like behavior
+            delay_config = DelayConfig.conservative()
+            flow = HybridInstagramFlow(account_id=account_id_str, delay_config=delay_config)
             flow_context = {
                 "email": email,
                 "password": password,

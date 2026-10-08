@@ -5,6 +5,7 @@ import os
 import random
 from typing import Dict, Optional, Tuple
 from datetime import datetime
+from pathlib import Path
 from openai import OpenAI
 
 from app.modules.accounts.platforms.instagram.element_detection import (
@@ -14,11 +15,30 @@ from app.modules.accounts.platforms.instagram.element_detection import (
     detect_checkpoint_type,
     is_straight_to_checkpoint,
 )
-from app.modules.accounts.platforms.instagram.human_behavior import HumanBehaviorSimulator
+from app.modules.accounts.platforms.instagram.human_behavior import HumanBehaviorSimulator, DelayConfig
 from app.modules.accounts.platforms.instagram.proxy_config import (
     load_proxy_from_env, get_proxy_url, get_masked_url, validate_proxy_connection,
     diagnose_proxy_error, ProxyAuthenticationError, ProxyConnectionError
 )
+
+EVIDENCE_DIR = Path("./data/evidence")
+
+
+def _save_evidence(account_id: str, step_name: str, image_bytes: bytes):
+    """Save screenshot to evidence directory."""
+    EVIDENCE_DIR.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    filename = f"{account_id}_{step_name}_{timestamp}.png"
+    (EVIDENCE_DIR / filename).write_bytes(image_bytes)
+
+
+def _save_evidence_metadata(account_id: str, step_name: str, metadata: Dict):
+    """Save step metadata JSON."""
+    EVIDENCE_DIR.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    filename = f"{account_id}_{step_name}_{timestamp}.json"
+    data = {"account_id": account_id, "step": step_name, "timestamp": datetime.now().isoformat(), **metadata}
+    (EVIDENCE_DIR / filename).write_text(json.dumps(data, indent=2, ensure_ascii=False))
 
 
 class HybridInstagramFlow:
@@ -42,8 +62,9 @@ class HybridInstagramFlow:
     MAX_DIRECT_RETRIES = 3
     PLAYWRIGHT_TIMEOUT = 10000
     
-    def __init__(self, account_id: Optional[str] = None):
+    def __init__(self, account_id: Optional[str] = None, delay_config: Optional[DelayConfig] = None):
         self.account_id = account_id
+        self.delay_config = delay_config or DelayConfig.conservative()
         self.client = OpenAI(
             api_key=os.getenv("VENICE_API_KEY"),
             base_url="https://api.venice.ai/api/v1"
@@ -55,20 +76,20 @@ class HybridInstagramFlow:
         self._setup_system_proxy_if_needed()
         
         if self.proxy_config:
-            self._emit("info", f"Proxy configured: {get_masked_url(self.proxy_config)}")
-            self._emit("info", "Testing proxy connection...")
+            self._log(f"Proxy configured: {get_masked_url(self.proxy_config)}")
+            self._log("Testing proxy connection...")
             try:
                 validate_proxy_connection(self.proxy_config)
                 self.using_proxy = True
-                self._emit("success", "Proxy connection successful - will use proxy for automation")
+                self._log("Proxy connection successful - will use proxy for automation")
             except (ProxyAuthenticationError, ProxyConnectionError) as e:
                 diagnosis = diagnose_proxy_error(e)
-                self._emit("warning", f"Proxy validation failed: {diagnosis}")
-                self._emit("warning", "FALLBACK: Running without proxy. Instagram checkpoint expected.")
+                self._log(f"Proxy validation failed: {diagnosis}")
+                self._log("FALLBACK: Running without proxy. Instagram checkpoint expected.")
                 self.proxy_config = None
                 self.using_proxy = False
         else:
-            self._emit("warning", "Proxy disabled - running without proxy (checkpoint expected)")
+            self._log("Proxy disabled - running without proxy (checkpoint expected)")
     
     def _setup_system_proxy_if_needed(self):
         if not self.proxy_config:
@@ -81,21 +102,39 @@ class HybridInstagramFlow:
             os.environ["HTTPS_PROXY"] = proxy_url
             os.environ["http_proxy"] = proxy_url
             os.environ["https_proxy"] = proxy_url
-            self._emit("info", "System proxy environment variables set")
+            self._log("System proxy environment variables set")
     
-    async def _emit(self, event_type: str, detail: str):
+    def _emit(self, event_type: str, detail: str):
+        """Sync emit: logs locally and queues WS broadcast"""
         self._log(detail)
         if self.account_id:
+            self._pending_broadcasts.append({
+                "account_id": self.account_id,
+                "type": event_type,
+                "detail": detail,
+                "timestamp": datetime.now().isoformat()
+            })
+    
+    async def _flush_broadcasts(self):
+        """Flush all pending WS broadcasts"""
+        from app.api.websocket_manager import manager
+        for msg in self._pending_broadcasts:
             try:
-                from app.api.websocket_manager import manager
-                await manager.broadcast({
-                    "account_id": self.account_id,
-                    "type": event_type,
-                    "detail": detail,
-                    "timestamp": datetime.now().isoformat()
-                })
+                await manager.broadcast(msg)
             except Exception:
                 pass
+        self._pending_broadcasts.clear()
+    
+    async def _save_step_screenshot(self, page, step_name: str):
+        """Save screenshot evidence for a step."""
+        if not self.account_id:
+            return
+        try:
+            screenshot = await page.screenshot(type="png")
+            _save_evidence(self.account_id, step_name, screenshot)
+            _save_evidence_metadata(self.account_id, step_name, {"url": page.url})
+        except Exception as e:
+            self._log(f"Failed to save screenshot for {step_name}: {e}")
     
     async def execute_step(self, step_name: str, page, context: Dict) -> Dict:
         action_mode = self.DETERMINISTIC_ACTIONS.get(step_name, "ai")
@@ -104,22 +143,27 @@ class HybridInstagramFlow:
             action_mode = "ai"
         
         self._emit("step_started", f"Step: {step_name}, Mode: {action_mode}")
+        await self._flush_broadcasts()
         
         if action_mode == "playwright":
             success, error = await self._execute_playwright_action(step_name, page, context)
             if success:
                 self._emit("step_completed", f"Step {step_name} completed (playwright)")
+                await self._flush_broadcasts()
                 return {"success": True, "mode": "playwright", "step": step_name}
             
             for attempt in range(self.MAX_DIRECT_RETRIES - 1):
                 self._emit("warning", f"Playwright failed for {step_name}, retry {attempt + 1}")
+                await self._flush_broadcasts()
                 await asyncio.sleep(2)
                 success, error = await self._execute_playwright_action(step_name, page, context)
                 if success:
                     self._emit("step_completed", f"Step {step_name} completed (playwright retry)")
+                    await self._flush_broadcasts()
                     return {"success": True, "mode": "playwright", "step": step_name}
             
             self._emit("warning", f"Playwright exhausted for {step_name}, falling back to AI")
+            await self._flush_broadcasts()
             return await self._ai_navigation_decision(page, context, error)
         
         else:
@@ -130,55 +174,65 @@ class HybridInstagramFlow:
             if step_name == "fill_email":
                 email = context.get("email", "")
                 self._emit("step_executed", f"Preenchendo email: {email}")
-                await HumanBehaviorSimulator.random_delay(0.5, 2)
+                await self._flush_broadcasts()
+                await HumanBehaviorSimulator.random_delay(config=self.delay_config)
                 await HumanBehaviorSimulator.random_scroll(page)
                 
                 locator = page.locator('input[name="emailOrPhone"]').first
                 if await locator.count() == 0:
                     locator = page.locator('input[type="email"]').first
                 if await locator.count() > 0:
-                    await HumanBehaviorSimulator.type_like_human(page, 'input[name="emailOrPhone"]', email)
+                    await HumanBehaviorSimulator.type_like_human(page, 'input[name="emailOrPhone"]', email, config=self.delay_config)
                     await asyncio.sleep(0.5)
                     try:
                         value = await locator.input_value()
                         self._emit("step_completed", f"Email preenchido: {email}")
+                        await self._flush_broadcasts()
                         return email.lower() in value.lower(), None
                     except:
                         self._emit("step_completed", f"Email preenchido: {email}")
+                        await self._flush_broadcasts()
                         return True, None
                 self._emit("error", "Email field not found")
+                await self._flush_broadcasts()
                 return False, "Email field not found"
             
             elif step_name == "fill_password":
                 self._emit("step_executed", "Preenchendo senha")
+                await self._flush_broadcasts()
                 password = context.get("password", "")
-                await HumanBehaviorSimulator.random_delay(0.5, 1.5)
+                await HumanBehaviorSimulator.random_delay(config=self.delay_config)
                 
                 locator = page.locator('input[name="password"]').first
                 if await locator.count() == 0:
                     locator = page.locator('input[type="password"]').first
                 if await locator.count() > 0:
-                    await HumanBehaviorSimulator.type_like_human(page, 'input[name="password"]', password)
+                    await HumanBehaviorSimulator.type_like_human(page, 'input[name="password"]', password, config=self.delay_config)
                     await asyncio.sleep(0.5)
                     self._emit("step_completed", "Senha preenchida")
+                    await self._flush_broadcasts()
                     return True, None
                 self._emit("error", "Password field not found")
+                await self._flush_broadcasts()
                 return False, "Password field not found"
             
             elif step_name == "fill_name":
                 name = f"{context.get('first_name', '')} {context.get('last_name', '')}"
                 self._emit("step_executed", f"Preenchendo nome: {name}")
-                await HumanBehaviorSimulator.random_delay(0.5, 1.5)
+                await self._flush_broadcasts()
+                await HumanBehaviorSimulator.random_delay(config=self.delay_config)
                 
                 locator = page.locator('input[name="fullName"]').first
                 if await locator.count() == 0:
                     locator = page.locator('input[name*="name"]').first
                 if await locator.count() > 0:
-                    await HumanBehaviorSimulator.type_like_human(page, 'input[name="fullName"]', name)
+                    await HumanBehaviorSimulator.type_like_human(page, 'input[name="fullName"]', name, config=self.delay_config)
                     await asyncio.sleep(0.5)
                     self._emit("step_completed", f"Nome preenchido: {name}")
+                    await self._flush_broadcasts()
                     return True, None
                 self._emit("error", "Name field not found")
+                await self._flush_broadcasts()
                 return False, "Name field not found"
             
             elif step_name == "fill_birth_date":
@@ -188,7 +242,8 @@ class HybridInstagramFlow:
                     try:
                         birth = datetime.strptime(birth_date, "%Y-%m-%d")
                         self._emit("step_executed", f"Preenchendo data de nascimento: {birth_date}")
-                        await HumanBehaviorSimulator.random_delay(0.3, 1)
+                        await self._flush_broadcasts()
+                        await HumanBehaviorSimulator.random_delay(config=self.delay_config)
                         
                         month_sel = page.locator('select[title*="Month"]').first
                         day_sel = page.locator('select[title*="Day"]').first
@@ -204,18 +259,21 @@ class HybridInstagramFlow:
                             await year_sel.select_option(str(birth.year))
                             await asyncio.sleep(0.5)
                         self._emit("step_completed", "Data de nascimento preenchida")
+                        await self._flush_broadcasts()
                         return True, None
                     except:
                         pass
                 self._emit("error", "Birth date fields not found")
+                await self._flush_broadcasts()
                 return False, "Birth date fields not found"
             
             elif step_name in ("click_next", "click_sign_up"):
                 self._emit("step_executed", "Clicando no botão Next")
+                await self._flush_broadcasts()
                 btn = await find_next_button(page)
                 if btn:
                     await HumanBehaviorSimulator.move_mouse_human_like(page, "")
-                    await HumanBehaviorSimulator.random_delay(0.3, 1)
+                    await HumanBehaviorSimulator.random_delay(config=self.delay_config)
                     
                     prev_url = page.url
                     try:
@@ -228,18 +286,30 @@ class HybridInstagramFlow:
                         self._emit("step_completed", "Página navegada com sucesso")
                     else:
                         self._emit("step_completed", "Botão clicado (mesma página)")
+                    await self._flush_broadcasts()
                     return True, None
                 self._emit("error", "Next button not found")
+                await self._flush_broadcasts()
                 return False, "Next button not found"
             
             self._emit("error", f"Unknown step: {step_name}")
+            await self._flush_broadcasts()
             return False, f"Unknown step: {step_name}"
             
         except Exception as e:
             self._emit("error", f"Exception in {step_name}: {str(e)}")
+            await self._flush_broadcasts()
             return False, str(e)
     
     async def _ai_navigation_decision(self, page, context: Dict, last_error: Optional[str]) -> Dict:
+        # Save screenshot before sending to AI
+        if self.account_id:
+            try:
+                screenshot = await page.screenshot(type="png")
+                _save_evidence(self.account_id, "ai_vision", screenshot)
+            except Exception:
+                pass
+        
         screenshot = await page.screenshot(type="jpeg", quality=80)
         base64_image = base64.b64encode(screenshot).decode("utf-8")
         
@@ -291,6 +361,7 @@ Return JSON:
         
         decision = json.loads(response.choices[0].message.content)
         self._emit("ai_decision", f"AI decision: {decision.get('action', 'unknown')} - {decision.get('reason', '')}")
+        await self._flush_broadcasts()
         
         action = decision.get("action", "")
         selector = decision.get("selector", "")
@@ -300,6 +371,7 @@ Return JSON:
         try:
             if action == "click_button":
                 self._emit("step_executed", f"AI: Clicando botão '{selector}'")
+                await self._flush_broadcasts()
                 if selector.startswith(("button[", "input[", ".", "#")):
                     locator = page.locator(selector).first
                     if await locator.count() > 0:
@@ -314,10 +386,12 @@ Return JSON:
                         await page.get_by_text(selector).first.click()
                 await asyncio.sleep(2)
                 self._emit("step_completed", f"AI: Botão clicado - {reason}")
+                await self._flush_broadcasts()
                 return {"success": True, "mode": "ai", "action": action, "reason": reason}
             
             elif action == "fill_field":
                 self._emit("step_executed", f"AI: Preenchendo campo '{selector}' com '{value}'")
+                await self._flush_broadcasts()
                 locator = page.locator(selector).first
                 if await locator.count() > 0:
                     await locator.fill(value)
@@ -325,47 +399,79 @@ Return JSON:
                     await page.locator("input:visible").first.fill(value)
                 await asyncio.sleep(1)
                 self._emit("step_completed", f"AI: Campo preenchido - {reason}")
+                await self._flush_broadcasts()
                 return {"success": True, "mode": "ai", "action": action, "reason": reason}
             
             elif action == "scroll":
                 self._emit("step_executed", "AI: Scrollando página")
+                await self._flush_broadcasts()
                 await page.mouse.wheel(0, 300)
                 await asyncio.sleep(1)
                 self._emit("step_completed", "AI: Scroll completado")
+                await self._flush_broadcasts()
                 return {"success": True, "mode": "ai", "action": action, "reason": reason}
             
             elif action == "wait":
                 self._emit("step_executed", "AI: Aguardando...")
+                await self._flush_broadcasts()
                 await asyncio.sleep(3)
                 self._emit("step_completed", "AI: Espera completada")
+                await self._flush_broadcasts()
                 return {"success": True, "mode": "ai", "action": action, "reason": reason}
             
             elif action == "report_error":
                 self._emit("error", f"AI reportou erro: {reason}")
+                await self._flush_broadcasts()
                 return {"success": False, "mode": "ai", "action": action, "reason": reason, "error": reason}
             
             else:
                 self._emit("warning", f"AI ação desconhecida: {action}")
+                await self._flush_broadcasts()
                 await asyncio.sleep(2)
                 return {"success": True, "mode": "ai", "action": "unknown", "reason": reason}
                 
         except Exception as e:
             self._emit("error", f"AI action failed: {str(e)}")
+            await self._flush_broadcasts()
             return {"success": False, "mode": "ai", "action": action, "reason": reason, "error": str(e)}
     
     async def execute_full_flow(self, page, context: Dict) -> Dict:
+        self._pending_broadcasts = []
         initial_url = page.url
+        
+        # Save initial screenshot
+        await self._save_step_screenshot(page, "start")
         
         self._emit("info", "=== Iniciando fluxo de criação de conta Instagram ===")
         self._emit("info", f"Email: {context.get('email', 'N/A')}")
         self._emit("info", f"Nome: {context.get('first_name', '')} {context.get('last_name', '')}")
         self._emit("info", f"Nascimento: {context.get('birth_date', 'N/A')}")
+        await self._flush_broadcasts()
+        
+        # Warmup delay
+        self._emit("info", f"Warmup delay ({self.delay_config.warmup[0]}-{self.delay_config.warmup[1]}s)...")
+        await self._flush_broadcasts()
+        await HumanBehaviorSimulator.warmup_delay(self.delay_config)
         
         checkpoint_info = await detect_checkpoint_type(page)
         if checkpoint_info["type"] != "none":
             self._emit("warning", f"Checkpoint detectado imediatamente: {checkpoint_info['type']}")
+            await self._flush_broadcasts()
+            # Save checkpoint evidence
+            if self.account_id:
+                try:
+                    screenshot = await page.screenshot(type="png")
+                    _save_evidence(self.account_id, f"checkpoint_{checkpoint_info['type']}", screenshot)
+                    _save_evidence_metadata(self.account_id, f"checkpoint_{checkpoint_info['type']}", {
+                        "checkpoint_type": checkpoint_info["type"],
+                        "url": page.url,
+                        "severity": checkpoint_info.get("severity", "high"),
+                    })
+                except Exception:
+                    pass
             if is_straight_to_checkpoint(page, initial_url):
                 self._emit("error", "Straight to checkpoint - IP likely flagged")
+                await self._flush_broadcasts()
                 return {"success": False, "error": "Straight to checkpoint - IP flagged", "log": self.log}
         
         steps = [
@@ -380,27 +486,56 @@ Return JSON:
         
         for step_name, description in steps:
             self._emit("step_started", f"Iniciando: {description}")
+            await self._flush_broadcasts()
             
             is_blocked, block_msg = await is_instagram_blocking(page)
             if is_blocked:
                 self._emit("warning", f"Blocking detectado: {block_msg}")
                 checkpoint = await detect_checkpoint_type(page)
                 self._emit("warning", f"Checkpoint type: {checkpoint['type']}")
+                await self._flush_broadcasts()
+                # Save checkpoint evidence
+                if self.account_id:
+                    try:
+                        screenshot = await page.screenshot(type="png")
+                        _save_evidence(self.account_id, f"blocking_{checkpoint['type']}", screenshot)
+                        _save_evidence_metadata(self.account_id, f"blocking_{checkpoint['type']}", {
+                            "checkpoint_type": checkpoint["type"],
+                            "url": page.url,
+                            "block_msg": block_msg,
+                        })
+                    except Exception:
+                        pass
                 result = await self._ai_navigation_decision(page, context, f"Blocking: {block_msg}, Type: {checkpoint['type']}")
                 if not result.get("success"):
                     self._emit("error", f"Não foi possível resolver blocking: {block_msg}")
+                    await self._flush_broadcasts()
                     return {"success": False, "error": f"Instagram blocking: {block_msg}", "log": self.log}
             
             result = await self.execute_step(step_name, page, context)
             
             if not result.get("success"):
                 self._emit("error", f"Step {step_name} falhou: {result.get('error', 'Unknown')}")
+                await self._flush_broadcasts()
+                # Save error screenshot
+                if self.account_id:
+                    try:
+                        screenshot = await page.screenshot(type="png")
+                        _save_evidence(self.account_id, f"error_{step_name}", screenshot)
+                    except Exception:
+                        pass
                 return {"success": False, "error": result.get("error", f"Step {step_name} failed"), "log": self.log}
             
             self._emit("step_completed", f"Step {step_name} completado com sucesso")
-            await HumanBehaviorSimulator.random_delay(2, 4)
+            await self._flush_broadcasts()
+            
+            # Save screenshot after each step
+            await self._save_step_screenshot(page, f"after_{step_name}")
+            
+            await HumanBehaviorSimulator.random_delay(config=self.delay_config)
         
         self._emit("info", "Todos os steps completados, extraindo handle...")
+        await self._flush_broadcasts()
         await asyncio.sleep(3)
         url = page.url
         import re
@@ -408,18 +543,44 @@ Return JSON:
         if match and match.group(1) not in ("accounts", "explore", "reels", "p", "direct"):
             handle = match.group(1)
             self._emit("success", f"Conta criada com sucesso! Handle: @{handle}")
+            await self._flush_broadcasts()
+            # Save success screenshot
+            if self.account_id:
+                try:
+                    screenshot = await page.screenshot(type="png")
+                    _save_evidence(self.account_id, "success", screenshot)
+                    _save_evidence_metadata(self.account_id, "success", {
+                        "handle": handle,
+                        "url": page.url,
+                    })
+                except Exception:
+                    pass
             return {"success": True, "handle": handle, "log": self.log}
         
         if "/feed" in url or "/direct" in url:
             self._emit("success", "Conta criada (handle não extraído, mas na feed/direct)")
+            await self._flush_broadcasts()
             return {"success": True, "handle": None, "log": self.log}
         
         checkpoint = await detect_checkpoint_type(page)
         if checkpoint["type"] != "none":
             self._emit("error", f"Checkpoint no final: {checkpoint['type']}")
+            await self._flush_broadcasts()
+            # Save checkpoint evidence
+            if self.account_id:
+                try:
+                    screenshot = await page.screenshot(type="png")
+                    _save_evidence(self.account_id, f"checkpoint_final_{checkpoint['type']}", screenshot)
+                    _save_evidence_metadata(self.account_id, f"checkpoint_final_{checkpoint['type']}", {
+                        "checkpoint_type": checkpoint["type"],
+                        "url": page.url,
+                    })
+                except Exception:
+                    pass
             return {"success": False, "error": f"Checkpoint at end: {checkpoint['type']}", "log": self.log}
         
         self._emit("error", "Não foi possível extrair handle após signup")
+        await self._flush_broadcasts()
         return {"success": False, "error": "Could not extract handle after signup", "log": self.log}
     
     def _log(self, message: str):

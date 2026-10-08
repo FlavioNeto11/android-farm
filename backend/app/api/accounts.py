@@ -378,21 +378,37 @@ async def get_account_credentials(account_id: str):
 @router.get("/{account_id}/evidence")
 async def get_account_evidence(account_id: str):
     """Obter evidências de uma conta (screenshots, logs)"""
-    evidence_dir = "./data/evidence"
+    from pathlib import Path
+    evidence_dir = Path("./data/evidence")
+    evidence_dir.mkdir(parents=True, exist_ok=True)
     evidence_files = []
 
-    if os.path.exists(evidence_dir):
-        for filename in os.listdir(evidence_dir):
-            if account_id in filename:
-                file_path = os.path.join(evidence_dir, filename)
+    for f in evidence_dir.iterdir():
+        if f.name.startswith(account_id):
+            if f.suffix in (".png", ".jpg", ".jpeg"):
                 evidence_files.append({
                     "account_id": account_id,
-                    "evidence_type": "screenshot" if filename.endswith(('.png', '.jpg', '.jpeg')) else "log",
+                    "evidence_type": "screenshot",
+                    "filename": f.name,
                     "timestamp": "",
-                    "screenshot_url": f"/api/evidence/{filename}",
-                    "description": f"Evidência: {filename}",
+                    "screenshot_url": f"/api/evidence/{f.name}",
+                    "description": f"Evidência: {f.name}",
                 })
+            elif f.suffix == ".json":
+                try:
+                    data = json.loads(f.read_text())
+                    evidence_files.append({
+                        "account_id": account_id,
+                        "evidence_type": "metadata",
+                        "filename": f.name,
+                        "step": data.get("step", ""),
+                        "timestamp": data.get("timestamp", ""),
+                        "description": f"Metadata: {data.get('step', '')}",
+                    })
+                except json.JSONDecodeError:
+                    pass
 
+    evidence_files.sort(key=lambda x: x.get("timestamp", x.get("filename", "")), reverse=True)
     return evidence_files
 
 
