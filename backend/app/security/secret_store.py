@@ -53,7 +53,7 @@ class SecretStore:
         with open(path, "wb") as f:
             f.write(encrypted)
 
-        logger.debug(f"Secret encrypted and stored as REF {secret_ref}")
+        logger.debug("Secret encrypted and stored")
         return secret_ref
 
     def decrypt(self, secret_ref: str) -> str:
@@ -99,7 +99,7 @@ class SecretStore:
 
         if os.path.exists(path):
             os.remove(path)
-            logger.debug(f"Secret REF {secret_ref} deleted")
+            logger.debug("Secret entry deleted")
 
     def is_locked(self) -> bool:
         """Verificar se a loja está travada"""
