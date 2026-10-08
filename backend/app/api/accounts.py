@@ -45,6 +45,7 @@ async def request_account_creation(request: AccountCreationRequest):
                     import random
                     headless = os.getenv("BROWSER_HEADLESS", "false").lower() == "true"
                     from app.modules.accounts.platforms.instagram.hybrid_flow import HybridInstagramFlow
+                    from app.modules.accounts.platforms.instagram.human_behavior import HumanBehaviorSimulator
                     from app.modules.browsers.domain.browser_profile import get_browser_manager
                     
                     first_names = ["maria", "joao", "ana", "pedro", "carla", "lucas", "julia", "gabriel", "rafael", "camila"]
@@ -60,8 +61,15 @@ async def request_account_creation(request: AccountCreationRequest):
                     realistic_password = f"{first.capitalize()}{last.capitalize()}{number}!"
                     
                     browser_manager = get_browser_manager()
-                    context = await browser_manager.create_context(account_id=account.profile_id)
+                    viewport = HumanBehaviorSimulator.get_random_viewport()
+                    context = await browser_manager.create_context(
+                        account_id=account.profile_id,
+                        viewport_size=viewport
+                    )
                     page = await context.new_page()
+                    
+                    user_agent = HumanBehaviorSimulator.get_random_user_agent()
+                    await page.set_extra_http_headers({"User-Agent": user_agent})
                     
                     try:
                         flow = HybridInstagramFlow()

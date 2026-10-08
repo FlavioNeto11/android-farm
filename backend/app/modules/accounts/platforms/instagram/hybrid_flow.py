@@ -11,7 +11,10 @@ from app.modules.accounts.platforms.instagram.element_detection import (
     find_next_button,
     wait_for_element_stable,
     is_instagram_blocking,
+    detect_checkpoint_type,
+    is_straight_to_checkpoint,
 )
+from app.modules.accounts.platforms.instagram.human_behavior import HumanBehaviorSimulator
 
 
 class HybridInstagramFlow:
@@ -73,34 +76,44 @@ class HybridInstagramFlow:
         try:
             if step_name == "fill_email":
                 email = context.get("email", "")
+                await HumanBehaviorSimulator.random_delay(0.5, 2)
+                await HumanBehaviorSimulator.random_scroll(page)
+                
                 locator = page.locator('input[name="emailOrPhone"]').first
                 if await locator.count() == 0:
                     locator = page.locator('input[type="email"]').first
                 if await locator.count() > 0:
-                    await locator.fill(email)
+                    await HumanBehaviorSimulator.type_like_human(page, 'input[name="emailOrPhone"]', email)
                     await asyncio.sleep(0.5)
-                    value = await locator.input_value()
-                    return email.lower() in value.lower(), None
+                    try:
+                        value = await locator.input_value()
+                        return email.lower() in value.lower(), None
+                    except:
+                        return True, None
                 return False, "Email field not found"
             
             elif step_name == "fill_password":
                 password = context.get("password", "")
+                await HumanBehaviorSimulator.random_delay(0.5, 1.5)
+                
                 locator = page.locator('input[name="password"]').first
                 if await locator.count() == 0:
                     locator = page.locator('input[type="password"]').first
                 if await locator.count() > 0:
-                    await locator.fill(password)
+                    await HumanBehaviorSimulator.type_like_human(page, 'input[name="password"]', password)
                     await asyncio.sleep(0.5)
                     return True, None
                 return False, "Password field not found"
             
             elif step_name == "fill_name":
                 name = f"{context.get('first_name', '')} {context.get('last_name', '')}"
+                await HumanBehaviorSimulator.random_delay(0.5, 1.5)
+                
                 locator = page.locator('input[name="fullName"]').first
                 if await locator.count() == 0:
                     locator = page.locator('input[name*="name"]').first
                 if await locator.count() > 0:
-                    await locator.fill(name)
+                    await HumanBehaviorSimulator.type_like_human(page, 'input[name="fullName"]', name)
                     await asyncio.sleep(0.5)
                     return True, None
                 return False, "Name field not found"
@@ -111,17 +124,21 @@ class HybridInstagramFlow:
                     from datetime import datetime
                     try:
                         birth = datetime.strptime(birth_date, "%Y-%m-%d")
+                        await HumanBehaviorSimulator.random_delay(0.3, 1)
+                        
                         month_sel = page.locator('select[title*="Month"]').first
                         day_sel = page.locator('select[title*="Day"]').first
                         year_sel = page.locator('select[title*="Year"]').first
                         
                         if await month_sel.count() > 0:
                             await month_sel.select_option(str(birth.month))
+                            await asyncio.sleep(random.uniform(0.2, 0.5))
                         if await day_sel.count() > 0:
                             await day_sel.select_option(str(birth.day))
+                            await asyncio.sleep(random.uniform(0.2, 0.5))
                         if await year_sel.count() > 0:
                             await year_sel.select_option(str(birth.year))
-                        await asyncio.sleep(0.5)
+                            await asyncio.sleep(0.5)
                         return True, None
                     except:
                         pass
@@ -130,13 +147,17 @@ class HybridInstagramFlow:
             elif step_name in ("click_next", "click_sign_up"):
                 btn = await find_next_button(page)
                 if btn:
+                    await HumanBehaviorSimulator.move_mouse_human_like(page, "")
+                    await HumanBehaviorSimulator.random_delay(0.3, 1)
+                    
                     prev_url = page.url
-                    await btn.click(timeout=self.PLAYWRIGHT_TIMEOUT)
-                    await asyncio.sleep(2)
+                    try:
+                        await btn.click(timeout=self.PLAYWRIGHT_TIMEOUT)
+                    except:
+                        pass
+                    await asyncio.sleep(random.uniform(2, 4))
+                    
                     if page.url != prev_url:
-                        return True, None
-                    locator = page.locator('button:has-text("Next")').first
-                    if await locator.count() > 0:
                         return True, None
                     return True, None
                 return False, "Next button not found"
@@ -250,6 +271,15 @@ Return JSON:
             return {"success": False, "mode": "ai", "action": action, "reason": reason, "error": str(e)}
     
     async def execute_full_flow(self, page, context: Dict) -> Dict:
+        initial_url = page.url
+        
+        checkpoint_info = await detect_checkpoint_type(page)
+        if checkpoint_info["type"] != "none":
+            self._log(f"Checkpoint detected immediately: {checkpoint_info}")
+            if is_straight_to_checkpoint(page, initial_url):
+                self._log("Straight to checkpoint - IP likely flagged")
+                return {"success": False, "error": "Straight to checkpoint - IP flagged", "log": self.log}
+        
         steps = [
             ("fill_email", "Preenchendo email"),
             ("fill_password", "Preenchendo senha"),
@@ -261,32 +291,37 @@ Return JSON:
         ]
         
         for step_name, description in steps:
-            self._log(f"Starting: {description}")
+            self._log(f"Starting: {description} [Mode: {self.DETERMINISTIC_ACTIONS.get(step_name, 'ai')}]")
             
             is_blocked, block_msg = await is_instagram_blocking(page)
             if is_blocked:
                 self._log(f"Blocking detected: {block_msg}")
-                result = await self._ai_navigation_decision(page, context, f"Blocking: {block_msg}")
+                checkpoint = await detect_checkpoint_type(page)
+                result = await self._ai_navigation_decision(page, context, f"Blocking: {block_msg}, Type: {checkpoint['type']}")
                 if not result.get("success"):
                     return {"success": False, "error": f"Instagram blocking: {block_msg}", "log": self.log}
             
             result = await self.execute_step(step_name, page, context)
-            self._log(f"Result: {result}")
+            self._log(f"Result: {result.get('mode', 'unknown')} - {result.get('success', False)}")
             
             if not result.get("success"):
                 return {"success": False, "error": result.get("error", f"Step {step_name} failed"), "log": self.log}
             
-            await asyncio.sleep(random.uniform(2, 4))
+            await HumanBehaviorSimulator.random_delay(2, 4)
         
         await asyncio.sleep(3)
         url = page.url
         import re
         match = re.search(r'instagram\.com/([a-zA-Z0-9_.]+)/', url)
-        if match and match.group(1) not in ("accounts", "explore", "reels"):
+        if match and match.group(1) not in ("accounts", "explore", "reels", "p", "direct"):
             return {"success": True, "handle": match.group(1), "log": self.log}
         
         if "/feed" in url or "/direct" in url:
             return {"success": True, "handle": None, "log": self.log}
+        
+        checkpoint = await detect_checkpoint_type(page)
+        if checkpoint["type"] != "none":
+            return {"success": False, "error": f"Checkpoint at end: {checkpoint['type']}", "log": self.log}
         
         return {"success": False, "error": "Could not extract handle after signup", "log": self.log}
     
