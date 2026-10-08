@@ -22,8 +22,12 @@ wheels/
 
 # Virtual Environment
 venv/
+.venv/
 ENV/
 env/
+
+# Node
+node_modules/
 
 # Database
 *.db
@@ -32,17 +36,19 @@ env/
 
 # Environment
 .env
-.env.local
+.env.*
+!.env.example
 
 # Secrets
 *.key
 secrets/*
 data/secrets/*
 !secrets/.gitkeep
+**/data/secrets/
 
 # Logs
-logs/*.log
-logs/*.log.*
+*.log
+*.log.*
 !logs/.gitkeep
 
 # Data
@@ -66,6 +72,12 @@ playwright-cache/
 
 # Testing
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
 .coverage
 htmlcov/
 .tox/
+
+# Debug artifacts
+debug_login_*.png
+accounts_creation_report_*.txt
