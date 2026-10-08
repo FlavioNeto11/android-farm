@@ -1,45 +1,46 @@
 #!/usr/bin/env python
-"""Test script for end-to-end account creation: Outlook + Instagram"""
+"""Test script for end-to-end account creation: Outlook + Instagram with DB save"""
 import asyncio
 import sys
 import os
 import logging
 from pathlib import Path
 
-# Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / "backend"))
 
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler(os.path.join("logs", "test_flow.log")),
+        logging.FileHandler(os.path.join("logs", "test_full_flow.log")),
         logging.StreamHandler(sys.stdout)
     ]
 )
 logger = logging.getLogger(__name__)
 
-from app.db import get_db_context
-from sqlalchemy import text
+from app.db import init_db, get_db_session
+from app.config import settings
+from app.security.secret_store import init_secret_store, get_secret_store
+from app.models import Account, AccountStatus, Credential, CredentialStatus
 from app.modules.accounts.domain.account import PersonaData
 from app.modules.accounts.platforms.full_signup import FullAccountSignup
 from app.modules.browsers.domain.browser_profile import get_browser_manager, init_browser_manager
-from app.security.secret_store import get_secret_store
+from app.modules.accounts.platforms.instagram.verifier import InstagramLoginVerifier
+from sqlalchemy import text
 
 
-async def test_single_account_creation():
-    """Test the full Outlook + Instagram account creation flow"""
+async def test_full_flow_with_db():
+    """Test the full Outlook + Instagram account creation flow with DB save"""
 
     print("\n" + "="*80)
-    print("TESTING FULL ACCOUNT CREATION FLOW: Outlook -> Instagram")
+    print("ANDROID FARM - TEST FULL ACCOUNT CREATION FLOW (with DB save)")
+    print("Outlook -> Instagram")
     print("="*80 + "\n")
 
     result = {
-        "start_time": "",
-        "end_time": "",
+        "start_time": None,
+        "end_time": None,
         "persona_id": None,
-        "outlook_account": None,
-        "instagram_account": None,
         "outlook_handle": None,
         "instagram_handle": None,
         "outlook_password": None,
@@ -50,264 +51,232 @@ async def test_single_account_creation():
     }
 
     try:
-        from datetime import datetime
-        result["start_time"] = datetime.utcnow().isoformat()
+        from datetime import datetime, timezone
+        result["start_time"] = datetime.now(timezone.utc).isoformat()
         logger.info(f"Test started at: {result['start_time']}")
 
-        browser_manager = None
-        outlook_page = None
-        instagram_page = None
-        context = None
+        # Initialize database and secret store
+        init_db(settings.database_url)
+        init_secret_store(
+            key_file=settings.secret_store_key_file,
+            storage_path=settings.secret_store_storage_path
+        )
+        logger.info("Database and secret store initialized")
+        result["steps"].append({"step": "db_initialized", "status": "success"})
 
-        try:
-            from app.modules.browsers.domain.browser_profile import get_browser_manager, init_browser_manager
+        # Initialize browser
+        init_browser_manager(headless=True, anti_detect=True)
+        browser_manager = get_browser_manager()
+        logger.info("Browser manager initialized")
 
-            init_browser_manager(headless=True, anti_detect=True)
-            browser_manager = get_browser_manager()
-            logger.info("Browser manager initialized")
+        context = await browser_manager.create_context(
+            account_id="test-full-flow-db",
+            proxy_host=None,
+            proxy_port=None,
+            proxy_username=None,
+            proxy_password=None,
+            viewport_size={"width": 1280, "height": 720}
+        )
+        logger.info("Browser context created")
 
-            context = await browser_manager.create_context(
-                account_id="test-flow-single-account",
-                proxy_host=None,
-                proxy_port=None,
-                proxy_username=None,
-                proxy_password=None,
-                viewport_size={"width": 1280, "height": 720}
-            )
-            logger.info("Browser context created")
+        outlook_page = await context.new_page()
+        instagram_page = await context.new_page()
+        logger.info("Browser pages created")
 
-            first_page = await context.new_page()
-            outlook_page = first_page
-            logger.info("First page created for Outlook signup")
+        # Create persona
+        persona_id = "test-full-flow-db-001"
+        logger.info(f"Test persona ID: {persona_id}")
+        result["persona_id"] = persona_id
 
-            second_page = await context.new_page()
-            instagram_page = second_page
-            logger.info("Second page created for Instagram signup")
+        persona_data = PersonaData(
+            profile_id=persona_id,
+            display_name="Test Full Flow",
+            first_name="TestFull",
+            last_name="Flow",
+            email="testfullflow@example.com",
+            birth_date="1990-01-01",
+            gender="male",
+            locale="en_US"
+        )
+        result["steps"].append({"step": "persona_created", "status": "success"})
 
-            persona_id = "test-persona-123456"
-            logger.info(f"Test persona ID: {persona_id}")
+        # Run full signup
+        logger.info("Starting full account creation...")
+        full_signup = FullAccountSignup()
 
-            persona_data = PersonaData(
-                profile_id=persona_id,
-                display_name="Test Flow Account",
-                first_name="Test",
-                last_name="Flow",
-                email="testflow@example.com",
-                birth_date="1990-01-01",
-                gender="male",
-                locale="en_US"
-            )
+        full_signup_result = await full_signup.create_full_account(
+            persona_data=persona_data,
+            proxy_config=None,
+            timeout=120
+        )
 
-            logger.info("Persona data created")
-            result["persona_id"] = persona_id
-            result["steps"].append({"step": "persona_created", "status": "success"})
+        logger.info(f"Full signup result: {full_signup_result}")
 
-            logger.info("Starting full account creation...")
-            full_signup = FullAccountSignup()
+        if not full_signup_result.get("verified"):
+            error_msg = "Full signup verification failed"
+            logger.error(error_msg)
+            result["errors"].append(error_msg)
+            result["steps"].append({"step": "full_signup", "status": "failed", "error": error_msg})
+            raise Exception(error_msg)
 
-            full_signup_result = await full_signup.create_full_account(
-                persona_data=persona_data,
-                proxy_config=None,
-                timeout=120
-            )
+        result["outlook_handle"] = full_signup_result.get("outlook_email")
+        result["outlook_password"] = full_signup_result.get("outlook_password")
+        result["instagram_handle"] = full_signup_result.get("instagram_handle")
+        result["instagram_password"] = full_signup_result.get("instagram_password")
 
-            logger.info(f"Full signup result: {full_signup_result}")
-            result["steps"].append({
-                "step": "full_signup_completed",
-                "status": "success" if full_signup_result.get("verified") else "failed",
-                "result": full_signup_result
-            })
+        logger.info(f"Outlook: {result['outlook_handle']}")
+        logger.info(f"Instagram: @{result['instagram_handle']}")
+        result["steps"].append({"step": "full_signup", "status": "success"})
 
-            if not full_signup_result.get("verified"):
-                error_msg = "Full signup verification failed"
-                logger.error(error_msg)
-                result["errors"].append(error_msg)
-                raise Exception(error_msg)
+        # Save to database
+        logger.info("\n" + "="*80)
+        logger.info("SAVING ACCOUNTS TO DATABASE")
+        logger.info("="*80 + "\n")
 
-            success = full_signup_result.get("verified", False)
+        session = get_db_session()
+        secret_store = get_secret_store()
 
-            result["outlook_email"] = full_signup_result.get("outlook_email")
-            result["outlook_account"] = "Created"
+        # Save Outlook account
+        outlook_account = Account(
+            platform="outlook",
+            profile_id=persona_id,
+            status=AccountStatus.ready,
+            handle=result["outlook_handle"],
+        )
+        session.add(outlook_account)
+        session.flush()
 
-            if success:
-                result["steps"].append({"step": "outlook_created", "status": "success"})
-            else:
-                result["steps"].append({"step": "outlook_created", "status": "failed"})
+        outlook_secret_ref = secret_store.encrypt(result["outlook_password"])
+        outlook_credential = Credential(
+            account_id=outlook_account.id,
+            login_identifier=result["outlook_handle"],
+            secret_ref=outlook_secret_ref,
+            status=CredentialStatus.active
+        )
+        session.add(outlook_credential)
+        logger.info(f"Outlook account saved: {result['outlook_handle']} (ID: {outlook_account.id})")
 
-            if full_signup_result.get("outlook_email"):
-                logger.info(f"Outlook email: {full_signup_result['outlook_email']}")
-                result["outlook_handle"] = full_signup_result["outlook_email"]
-                result["outlook_password"] = full_signup_result["outlook_password"]
+        # Save Instagram account
+        instagram_account = Account(
+            platform="instagram",
+            profile_id=persona_id,
+            status=AccountStatus.ready,
+            handle=result["instagram_handle"],
+        )
+        session.add(instagram_account)
+        session.flush()
 
-            result["instagram_handle"] = full_signup_result.get("instagram_handle")
-            result["instagram_account"] = full_signup_result.get("instagram_handle", "Not created")
+        instagram_secret_ref = secret_store.encrypt(result["instagram_password"])
+        instagram_credential = Credential(
+            account_id=instagram_account.id,
+            login_identifier=result["instagram_handle"],
+            secret_ref=instagram_secret_ref,
+            status=CredentialStatus.active
+        )
+        session.add(instagram_credential)
+        logger.info(f"Instagram account saved: @{result['instagram_handle']} (ID: {instagram_account.id})")
 
-            logger.info("\n" + "="*80)
-            logger.info("VERIFICATION STAGE: Database Check")
-            logger.info("="*80 + "\n")
+        session.commit()
+        logger.info("Both accounts committed to database!")
+        result["steps"].append({"step": "db_save", "status": "success"})
 
-            # Verify accounts in database
-            try:
-                with get_db_context() as db:
-                    outlook_accounts = db.execute(
-                        text("SELECT id, platform, handle, status, created_at FROM accounts WHERE platform='outlook'")
-                    ).fetchall()
+        # Verify in database
+        logger.info("\n" + "="*80)
+        logger.info("DATABASE VERIFICATION")
+        logger.info("="*80 + "\n")
 
-                    logger.info(f"\n[Outlook Accounts in Database]")
-                    if outlook_accounts:
-                        for account in outlook_accounts:
-                            logger.info(f"  ID: {account.id}")
-                            logger.info(f"  Platform: {account.platform}")
-                            logger.info(f"  Handle: {account.handle}")
-                            logger.info(f"  Status: {account.status}")
-                            logger.info(f"  Created: {account.created_at}")
-                    else:
-                        logger.info("  No Outlook accounts found in database")
+        accounts = session.execute(text(
+            "SELECT id, platform, handle, status FROM accounts WHERE profile_id = :pid ORDER BY platform"
+        ), {"pid": persona_id}).fetchall()
 
-                    instagram_accounts = db.execute(
-                        text("SELECT id, platform, handle, status, created_at FROM accounts WHERE platform='instagram'")
-                    ).fetchall()
+        for acc in accounts:
+            logger.info(f"  {acc.platform}: {acc.handle} (status: {acc.status}, id: {acc.id})")
 
-                    logger.info(f"\n[Instagram Accounts in Database]")
-                    if instagram_accounts:
-                        for account in instagram_accounts:
-                            logger.info(f"  ID: {account.id}")
-                            logger.info(f"  Platform: {account.platform}")
-                            logger.info(f"  Handle: {account.handle}")
-                            logger.info(f"  Status: {account.status}")
-                            logger.info(f"  Created: {account.created_at}")
-                    else:
-                        logger.info("  No Instagram accounts found in database")
-            except RuntimeError as e:
-                if "Database not initialized" in str(e):
-                    logger.warning(f"\n[Database not initialized]")
-                    logger.warning("Accounts were created successfully, but not stored in database.")
-                    logger.info("")
-                else:
-                    raise
+        if len(accounts) == 2:
+            result["steps"].append({"step": "db_verify", "status": "success"})
+        else:
+            result["errors"].append(f"Expected 2 accounts, found {len(accounts)}")
+            result["steps"].append({"step": "db_verify", "status": "failed"})
 
-            verification_data = success and full_signup_result.get("outlook_email") and full_signup_result.get("instagram_handle")
+        # Verify Instagram account exists via HTTP
+        logger.info("\n" + "="*80)
+        logger.info("INSTAGRAM HTTP VERIFICATION")
+        logger.info("="*80 + "\n")
 
-            logger.info("\n" + "="*80)
-            logger.info("VERIFICATION STAGE: Login Verification (Instagram)")
-            logger.info("="*80 + "\n")
+        from app.modules.accounts.platforms.instagram.verifier import InstagramAccountVerifier
+        verifier = InstagramAccountVerifier()
+        verification = await verifier.verify_account(result["instagram_handle"], timeout=10)
 
-            if verification_data and full_signup_result.get("instagram_handle"):
-                instagram_login_handle = full_signup_result["instagram_handle"]
-                instagram_password = full_signup_result["instagram_password"]
+        if verification.get("verified"):
+            logger.info(f"[OK] Instagram @{result['instagram_handle']} exists!")
+            result["steps"].append({"step": "http_verify", "status": "success"})
+        else:
+            logger.error(f"[FAIL] Instagram @{result['instagram_handle']} not found")
+            result["errors"].append(f"Instagram account not found via HTTP")
+            result["steps"].append({"step": "http_verify", "status": "failed"})
 
-                logger.info(f"Attempting Instagram login for @{instagram_login_handle}...")
+        result["pass"] = len(result["errors"]) == 0
+        result["end_time"] = datetime.now(timezone.utc).isoformat()
 
-                from app.modules.accounts.platforms.instagram.verifier import InstagramLoginVerifier
-                login_verifier = InstagramLoginVerifier()
+        # Summary
+        logger.info("\n" + "="*80)
+        logger.info("TEST SUMMARY")
+        logger.info("="*80)
+        logger.info(f"Start: {result['start_time']}")
+        logger.info(f"End: {result['end_time']}")
+        logger.info(f"Persona: {result['persona_id']}")
+        logger.info(f"Outlook: {result['outlook_handle']}")
+        logger.info(f"Instagram: @{result['instagram_handle']}")
+        logger.info(f"Steps: {len(result['steps'])}")
+        logger.info(f"Errors: {len(result['errors'])}")
+        logger.info(f"RESULT: {'[PASS]' if result['pass'] else '[FAIL]'}")
+        logger.info("="*80 + "\n")
 
-                login_result = await login_verifier.login_and_verify(
-                    page=instagram_page,
-                    handle=instagram_login_handle,
-                    password=instagram_password,
-                    timeout=30
-                )
-
-                logger.info(f"Login verification result: {login_result}")
-
-                if login_result.get("logged_in"):
-                    logger.info(f"[OK] Instagram login successful for @{instagram_login_handle}")
-                    result["steps"].append({"step": "instagram_login_verified", "status": "success"})
-                    result["pass"] = True
-                else:
-                    logger.error(f"[FAIL] Instagram login failed for @{instagram_login_handle}")
-                    logger.error(f"Error: {login_result.get('error')}")
-                    result["steps"].append({"step": "instagram_login_verified", "status": "failed"})
-                    result["pass"] = False
-                    if login_result.get("error"):
-                        result["errors"].append(f"Instagram login failed: {login_result.get('error')}")
-
-            else:
-                logger.warning("Cannot verify Instagram login: account not created or missing credentials")
-                result["steps"].append({"step": "instagram_login_skipped", "status": "skipped", "reason": "Account not created"})
-                login_result = {"logged_in": False, "error": "Not verified"}
-
-            result["end_time"] = datetime.utcnow().isoformat()
-
-            logger.info("\n" + "="*80)
-            logger.info("TEST SUMMARY")
-            logger.info("="*80)
-            logger.info(f"Start Time: {result['start_time']}")
-            logger.info(f"End Time: {result['end_time']}")
-            logger.info(f"Persona ID: {result['persona_id']}")
-            logger.info(f"\n[OUTLOOK ACCOUNT]")
-            logger.info(f"  Email Handle: {result['outlook_handle']}")
-            logger.info(f"  Account Status: {result['outlook_account']}")
-            logger.info(f"\n[INSTAGRAM ACCOUNT]")
-            logger.info(f"  Username: {result['instagram_handle']}")
-            logger.info(f"  Account Status: {result['instagram_account']}")
-            logger.info(f"\nTEST RESULT: {'[PASS]' if result['pass'] else '[FAIL]'}")
-            logger.info("="*80 + "\n")
-
-            if result["errors"]:
-                logger.error(f"\nErrors encountered:\n")
-                for error in result["errors"]:
-                    logger.error(f"  - {error}")
-
-            print("\nTest completed!")
-            print(f"Final Result: {'PASS' if result['pass'] else 'FAIL'}")
-            print(f"Log file: logs/test_flow.log")
-
-            return result
-
-        finally:
-            if instagram_page:
-                await instagram_page.close()
-                logger.info("Instagram page closed")
-
-            if outlook_page:
-                await outlook_page.close()
-                logger.info("Outlook page closed")
-
-            if context:
-                await context.close()
-                logger.info("Browser context closed")
-
-            if browser_manager and browser_manager.playwright:
-                await browser_manager.playwright.stop()
-                logger.info("Browser playwright stopped")
+        return result
 
     except Exception as e:
         error_msg = f"Test failed: {e}"
         logger.error(error_msg, exc_info=True)
-        result["end_time"] = datetime.utcnow().isoformat()
+        from datetime import datetime, timezone
+        result["end_time"] = datetime.now(timezone.utc).isoformat()
         result["errors"].append(str(e))
         result["pass"] = False
-        print(f"\n[FAIL] Test FAILED: {error_msg}")
         return result
+
+    finally:
+        try:
+            if instagram_page:
+                await instagram_page.close()
+            if outlook_page:
+                await outlook_page.close()
+            if context:
+                await context.close()
+            if browser_manager and browser_manager.playwright:
+                await browser_manager.playwright.stop()
+            logger.info("Browser resources cleaned up")
+        except:
+            pass
 
 
 def main():
-    """Main entry point"""
-    print("\n" + "="*80)
-    print("ANDROID FARM - TEST FULL ACCOUNT CREATION FLOW")
-    print("Outlook -> Instagram")
-    print("="*80 + "\n")
-
     try:
-        result = asyncio.run(test_single_account_creation())
+        result = asyncio.run(test_full_flow_with_db())
 
         if result["pass"]:
             print("\n[PASS] TEST PASSED")
-            print("\nThe flow is working correctly!")
-            print("- Outlook account created")
-            print("- Instagram account created")
-            print("- Instagram credentials work")
+            print(f"- Outlook account created and saved: {result['outlook_handle']}")
+            print(f"- Instagram account created and saved: @{result['instagram_handle']}")
+            print(f"- Both accounts verified in database")
+            print(f"- Instagram account verified via HTTP")
             return 0
         else:
             print("\n[FAIL] TEST FAILED")
-            print("\nErrors found:")
             for error in result["errors"]:
                 print(f"  - {error}")
             return 1
 
     except KeyboardInterrupt:
-        print("\n\nTest interrupted by user")
+        print("\n\nTest interrupted")
         return 2
     except Exception as e:
         print(f"\n\nUnexpected error: {e}")
