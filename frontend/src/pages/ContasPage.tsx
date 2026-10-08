@@ -22,6 +22,8 @@ export function ContasPage() {
 
   useEffect(() => {
     fetchAccounts();
+    const interval = setInterval(fetchAccounts, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleSort = (column: SortBy) => {

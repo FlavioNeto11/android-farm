@@ -46,7 +46,7 @@ async def request_account_creation(request: AccountCreationRequest):
                     headless = os.getenv("BROWSER_HEADLESS", "false").lower() == "true"
                     from app.modules.accounts.platforms.instagram.hybrid_flow import HybridInstagramFlow
                     from app.modules.accounts.platforms.instagram.human_behavior import HumanBehaviorSimulator
-                    from app.modules.accounts.platforms.instagram.proxy_config import load_proxy_from_env
+                    from app.modules.accounts.platforms.instagram.proxy_config import load_proxy_from_env, ProxyConfig
                     from app.modules.browsers.domain.browser_profile import get_browser_manager
                     
                     first_names = ["maria", "joao", "ana", "pedro", "carla", "lucas", "julia", "gabriel", "rafael", "camila"]
@@ -65,6 +65,20 @@ async def request_account_creation(request: AccountCreationRequest):
                     viewport = HumanBehaviorSimulator.get_random_viewport()
                     
                     proxy_config = load_proxy_from_env()
+                    if not proxy_config:
+                        with get_db_context() as db_proxy:
+                            from app.models import Proxy as ProxyModel, ProxyStatus as PS
+                            active_proxy = db_proxy.query(ProxyModel).filter(ProxyModel.status == PS.active, ProxyModel.failed_count < 5).order_by(ProxyModel.used_count.asc()).first()
+                            if active_proxy:
+                                proxy_config = ProxyConfig(
+                                    host=active_proxy.host,
+                                    port=active_proxy.port,
+                                    username=active_proxy.username or "",
+                                    password=active_proxy.password_ref or ""
+                                )
+                                active_proxy.used_count += 1
+                                db_proxy.commit()
+                    
                     context_kwargs = {
                         "account_id": account.profile_id,
                         "viewport_size": viewport,

@@ -42,6 +42,23 @@ export const api = {
       body: JSON.stringify({ profile_id, platforms, persona_data }),
     }),
 
+  createAccountAI: (data: {
+    platform: string;
+    use_proxy: boolean;
+    proxy_session_id: string;
+    first_name?: string;
+    last_name?: string;
+    birth_date?: string;
+    gender?: string;
+  }) =>
+    request<{ account_id: string; platform: string; status: string; message: string }>(
+      `/instagram/create-account-ai`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      },
+    ),
+
   deleteAccount: (id: string) => request<{ message: string; account_id: string }>(`/accounts/${id}`, {
     method: 'DELETE',
   }),

@@ -75,7 +75,7 @@ class ProxyManager:
             host=proxy_dict["host"],
             port=proxy_dict["port"],
             username=proxy_dict.get("username"),
-            password_ref=proxy_dict.get("password_ref"),
+            password_ref=proxy_dict.get("password"),
             country=proxy_dict.get("country"),
             level=proxy_dict.get("level", "free")
         )

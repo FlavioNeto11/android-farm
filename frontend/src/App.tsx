@@ -6,12 +6,14 @@ import { ContasPage } from './pages/ContasPage';
 import { ContaDetailPage } from './pages/ContaDetailPage';
 import { CriarContaPage } from './pages/CriarContaPage';
 import { ProxiesPage } from './pages/ProxiesPage';
+import { AccountProgressPage } from './pages/AccountProgressPage';
 
 const PAGE_TITLES: Record<string, string> = {
   painel: 'Painel · Android Farm',
   contas: 'Contas · Android Farm',
   criar: 'Criar Conta · Android Farm',
   proxies: 'Proxies · Android Farm',
+  progress: 'Progresso · Android Farm',
   notfound: 'Não encontrado · Android Farm',
 };
 
@@ -62,6 +64,8 @@ function PageRouter() {
       return <CriarContaPage />;
     case 'proxies':
       return <ProxiesPage />;
+    case 'progress':
+      return <AccountProgressPage />;
     case 'notfound':
       return <NotFoundPage />;
     default:

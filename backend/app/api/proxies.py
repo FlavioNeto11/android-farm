@@ -1,5 +1,6 @@
 """Rotas de gerenciamento de proxies"""
 from fastapi import APIRouter, HTTPException, status
+from pydantic import BaseModel
 from typing import List, Optional
 import logging
 
@@ -10,6 +11,14 @@ from app.models import Proxy, ProxyStatus
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/proxies", tags=["proxies"])
+
+
+class ProxyCreateRequest(BaseModel):
+    host: str
+    port: int
+    username: Optional[str] = None
+    password: Optional[str] = None
+    country: Optional[str] = None
 
 
 @router.get("")
@@ -32,21 +41,17 @@ async def list_proxies():
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
-async def add_proxy(
-    host: str,
-    port: int,
-    username: Optional[str] = None,
-    country: Optional[str] = None
-):
+async def add_proxy(req: ProxyCreateRequest):
     """Adicionar proxy ao pool"""
     try:
         with get_db_context() as db:
             proxy_manager = get_proxy_manager()
             new_proxy = proxy_manager.add_proxy(db, {
-                "host": host,
-                "port": port,
-                "username": username,
-                "country": country,
+                "host": req.host,
+                "port": req.port,
+                "username": req.username,
+                "password": req.password,
+                "country": req.country,
             })
 
             return {

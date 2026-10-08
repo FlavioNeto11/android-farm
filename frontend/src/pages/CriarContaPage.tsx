@@ -86,20 +86,34 @@ export function CriarContaPage() {
     setSuccess(null);
 
     try {
-      const result = await api.createAccount(
-        profileId || `persona-${Date.now()}`,
-        platforms,
-        {
-          display_name: `${firstName} ${lastName}`.trim(),
+      if (platforms.includes('instagram')) {
+        const result = await api.createAccountAI({
+          platform: 'instagram',
+          use_proxy: proxyStats.active > 0,
+          proxy_session_id: `session_${Date.now()}`,
           first_name: firstName,
           last_name: lastName,
           birth_date: birthDate,
           gender,
-          locale: 'pt_BR',
-        }
-      );
-      setSuccess({ account_id: result.id, platform: result.platform });
-      setTimeout(() => navigate('contas'), 2000);
+        });
+        setSuccess({ account_id: result.account_id, platform: result.platform });
+        setTimeout(() => navigate('progress', result.account_id), 1500);
+      } else {
+        const result = await api.createAccount(
+          profileId || `persona-${Date.now()}`,
+          platforms,
+          {
+            display_name: `${firstName} ${lastName}`.trim(),
+            first_name: firstName,
+            last_name: lastName,
+            birth_date: birthDate,
+            gender,
+            locale: 'pt_BR',
+          }
+        );
+        setSuccess({ account_id: result.id, platform: result.platform });
+        setTimeout(() => navigate('contas'), 2000);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Falha ao criar conta');
     } finally {

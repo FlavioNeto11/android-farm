@@ -22,7 +22,9 @@ export function AutomationProgress({ accountId }: { accountId: string }) {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
 
   useEffect(() => {
-    const ws = new WebSocket(`ws://localhost:8001/api/ws/progress`);
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${wsProtocol}//${window.location.host}/api/ws/progress`;
+    const ws = new WebSocket(wsUrl);
     
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type FarmPage = 'painel' | 'contas' | 'criar' | 'proxies' | 'notfound';
+export type FarmPage = 'painel' | 'contas' | 'criar' | 'proxies' | 'progress' | 'notfound';
 
 interface FarmUiState {
   currentPage: FarmPage;
@@ -22,8 +22,12 @@ function extractIdFromHash(hash: string): { page: FarmPage; id: string | null } 
     const id = clean.slice(7);
     return { page: 'contas', id: id || null };
   }
+  if (clean.startsWith('progress/')) {
+    const id = clean.slice(9);
+    return { page: 'progress', id: id || null };
+  }
   const page = clean.split('/')[0] as FarmPage;
-  if (['painel', 'contas', 'criar', 'proxies'].includes(page)) {
+  if (['painel', 'contas', 'criar', 'proxies', 'progress'].includes(page)) {
     return { page, id: null };
   }
   return { page: 'notfound', id: null };
@@ -36,7 +40,7 @@ export const useUIStore = create<FarmUiState>((set) => ({
   isMobile: window.innerWidth < 1024,
 
   navigate: (page, id) => {
-    const hash = id ? `#/contas/${id}` : `#/${page}`;
+    const hash = page === 'progress' && id ? `#/progress/${id}` : id ? `#/contas/${id}` : `#/${page}`;
     window.location.hash = hash;
     set({ currentPage: page, selectedAccountId: id || null });
   },

@@ -26,6 +26,7 @@ from app.api.proxies import router as proxies_router
 from app.api.websocket import router as websocket_router
 from app.api.proxy_status import router as proxy_status_router
 from app.api.account_import import router as account_import_router
+from app.api.instagram_ai import router as instagram_ai_router
 
 import logging
 
@@ -105,6 +106,7 @@ app.include_router(proxies_router, prefix="/api")
 app.include_router(websocket_router, prefix="/api")
 app.include_router(proxy_status_router, prefix="/api")
 app.include_router(account_import_router, prefix="/api")
+app.include_router(instagram_ai_router, prefix="/api")
 
 # Serve evidence files
 @app.get("/api/evidence/{filename}")

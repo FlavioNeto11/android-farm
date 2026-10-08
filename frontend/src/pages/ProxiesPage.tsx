@@ -33,6 +33,7 @@ export function ProxiesPage() {
   const [country, setCountry] = useState('');
   const [adding, setAdding] = useState(false);
   const [formErrors, setFormErrors] = useState<ProxyFormErrors>({});
+  const [addingBrightData, setAddingBrightData] = useState(false);
 
   const loadData = async () => {
     setLoading(true);
@@ -79,6 +80,26 @@ export function ProxiesPage() {
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
+  };
+
+  const handleAddBrightData = async () => {
+    setAddingBrightData(true);
+    try {
+      await api.addProxy({
+        host: 'brd.superproxy.io',
+        port: 44445,
+        username: 'brd-customer-hl_569e5ea3-zone-isp_proxy1',
+        password: 'pmj92phck9qu',
+        country: 'BR',
+      });
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+      loadData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add Bright Data proxy');
+    } finally {
+      setAddingBrightData(false);
+    }
   };
 
   const handleAdd = async (e: React.FormEvent) => {
@@ -141,9 +162,14 @@ export function ProxiesPage() {
             {stats ? `${stats.active_proxies} ativos de ${stats.total_proxies}` : 'Carregando...'}
           </p>
         </div>
-        <Button variant="primary" icon={Plus} onClick={() => setShowForm(!showForm)}>
-          Adicionar Proxy
-        </Button>
+        <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
+          <Button variant="outline" onClick={handleAddBrightData} loading={addingBrightData}>
+            Adicionar Bright Data
+          </Button>
+          <Button variant="primary" icon={Plus} onClick={() => setShowForm(!showForm)}>
+            Adicionar Proxy
+          </Button>
+        </div>
       </div>
 
       {error && (
