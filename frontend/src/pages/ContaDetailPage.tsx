@@ -124,7 +124,7 @@ export function ContaDetailPage() {
                   </div>
                   <h1 className="t-titulo-pagina" style={{ fontSize: 'var(--fs-xl)' }}>
                     {account.platform === 'instagram' ? (
-                      account.handle.includes('@') ? (
+                      account.handle ? (account.handle.includes('@') ? (
                         <span>@{account.handle.split('@')[0]} <span style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-3)', fontWeight: 'normal' }}>(handle não capturado)</span></span>
                       ) : (
                         <a
@@ -137,6 +137,8 @@ export function ContaDetailPage() {
                         >
                           @{account.handle}
                         </a>
+                      )) : (
+                        <span>(handle não capturado)</span>
                       )
                     ) : (
                       account.handle

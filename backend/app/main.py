@@ -3,6 +3,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
+import os
+
+# Setup system proxy before any other imports if configured
+if os.getenv("PROXY_ENABLED") == "true" and os.getenv("PROXY_AUTO_SETUP") == "true":
+    try:
+        import sys
+        sys.path.insert(0, os.path.dirname(__file__))
+        from scripts.setup_system_proxy import setup_brightdata_system_proxy
+        setup_brightdata_system_proxy()
+    except Exception as e:
+        print(f"Warning: Could not setup system proxy: {e}")
+
 from dotenv import load_dotenv
 from app.config import settings
 from app.db import init_db, seed_platform_configs
@@ -12,8 +24,10 @@ from app.modules.browsers.domain.browser_profile import init_browser_manager
 from app.api.accounts import router as accounts_router
 from app.api.proxies import router as proxies_router
 from app.api.websocket import router as websocket_router
+from app.api.proxy_status import router as proxy_status_router
+from app.api.account_import import router as account_import_router
+
 import logging
-import os
 
 load_dotenv()
 
@@ -89,6 +103,8 @@ app.add_middleware(
 app.include_router(accounts_router, prefix="/api")
 app.include_router(proxies_router, prefix="/api")
 app.include_router(websocket_router, prefix="/api")
+app.include_router(proxy_status_router, prefix="/api")
+app.include_router(account_import_router, prefix="/api")
 
 # Serve evidence files
 @app.get("/api/evidence/{filename}")

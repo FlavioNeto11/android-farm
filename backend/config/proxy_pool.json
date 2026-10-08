@@ -1,0 +1,12 @@
+{
+  "provider": "brightdata_isp",
+  "base_credentials": {
+    "host": "brd.superproxy.io",
+    "port": 44445,
+    "username": "brd-customer-hl_569e5ea3-zone-isp_proxy1",
+    "password": "pmj92phck9qu"
+  },
+  "session_prefix": "android_farm",
+  "max_sessions_per_proxy": 5,
+  "rotation_policy": "sticky"
+}

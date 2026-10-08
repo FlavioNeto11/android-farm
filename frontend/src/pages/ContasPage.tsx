@@ -39,7 +39,7 @@ export function ContasPage() {
   };
 
   const filtered = accounts.filter((a) => {
-    if (searchQuery && !a.handle.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (searchQuery && !(a.handle?.toLowerCase().includes(searchQuery.toLowerCase()))) return false;
     if (filterPlatform && a.platform !== filterPlatform) return false;
     if (filterStatus && a.status !== filterStatus) return false;
     return true;
@@ -227,25 +227,31 @@ export function ContasPage() {
                   <td>
                     {account.platform === 'instagram' ? (
                       <div>
-                        {account.handle.includes('@') ? (
-                          <span className="coin truncate" style={{ display: 'block', maxWidth: '280px' }}>
-                            @{account.handle.split('@')[0]}
-                          </span>
+                        {account.handle ? (
+                          account.handle.includes('@') ? (
+                            <span className="coin truncate" style={{ display: 'block', maxWidth: '280px' }}>
+                              @{account.handle.split('@')[0]}
+                            </span>
+                          ) : (
+                            <a
+                              href={`https://www.instagram.com/${account.handle}/`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="coin truncate"
+                              style={{ display: 'block', maxWidth: '280px', color: 'var(--accent-text)', textDecoration: 'none' }}
+                              onMouseEnter={(e) => { e.currentTarget.style.textDecoration = 'underline'; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.textDecoration = 'none'; }}
+                            >
+                              @{account.handle}
+                            </a>
+                          )
                         ) : (
-                          <a
-                            href={`https://www.instagram.com/${account.handle}/`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="coin truncate"
-                            style={{ display: 'block', maxWidth: '280px', color: 'var(--accent-text)', textDecoration: 'none' }}
-                            onMouseEnter={(e) => { e.currentTarget.style.textDecoration = 'underline'; }}
-                            onMouseLeave={(e) => { e.currentTarget.style.textDecoration = 'none'; }}
-                          >
-                            @{account.handle}
-                          </a>
+                          <span className="t-legenda" style={{ display: 'block', fontSize: 'var(--fs-2xs)', color: 'var(--text-3)' }}>
+                            handle não capturado
+                          </span>
                         )}
                         <span className="t-legenda" style={{ display: 'block', fontSize: 'var(--fs-2xs)', color: 'var(--text-3)' }}>
-                          {account.email ? `vinculado a ${account.email}` : 'handle não capturado'}
+                          {account.email ? `vinculado a ${account.email}` : ''}
                         </span>
                       </div>
                     ) : (

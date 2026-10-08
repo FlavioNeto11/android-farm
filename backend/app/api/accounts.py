@@ -46,8 +46,8 @@ async def request_account_creation(request: AccountCreationRequest):
                     headless = os.getenv("BROWSER_HEADLESS", "false").lower() == "true"
                     from app.modules.accounts.platforms.instagram.hybrid_flow import HybridInstagramFlow
                     from app.modules.accounts.platforms.instagram.human_behavior import HumanBehaviorSimulator
+                    from app.modules.accounts.platforms.instagram.proxy_config import load_proxy_from_env
                     from app.modules.browsers.domain.browser_profile import get_browser_manager
-                    from app.modules.accounts.platforms.instagram.proxy_config import load_proxy_from_env, get_proxy_url
                     
                     first_names = ["maria", "joao", "ana", "pedro", "carla", "lucas", "julia", "gabriel", "rafael", "camila"]
                     last_names = ["silva", "santos", "oliveira", "pereira", "costa", "ferreira", "almeida", "rocha"]
@@ -84,7 +84,11 @@ async def request_account_creation(request: AccountCreationRequest):
                     try:
                         flow = HybridInstagramFlow()
                         
-                        await page.goto("https://www.instagram.com/accounts/emailsignup/", wait_until="domcontentloaded")
+                        await page.goto("https://www.instagram.com/accounts/emailsignup/", wait_until="domcontentloaded", timeout=60000)
+                        await flow._broadcast("navigating", "Indo para página de signup do Instagram")
+                        
+                        timeout_ms = 60000 if flow.using_proxy else 30000
+                        await page.goto("https://www.instagram.com/accounts/emailsignup/", wait_until="domcontentloaded", timeout=timeout_ms)
                         await flow._broadcast("navigating", "Indo para página de signup do Instagram")
                         
                         flow_context = {

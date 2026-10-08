@@ -113,9 +113,36 @@ class BrowserManager:
                 "username": proxy_username or "",
                 "password": proxy_password or "",
             }
+            launch_kwargs["slow_mo"] = 100
             logger.info(f"Browser launch configured with proxy {proxy_host}:{proxy_port}")
+            logger.debug(f"Proxy username length: {len(proxy_username or '')}")
 
         browser = await self.playwright.chromium.launch(**launch_kwargs)
+        
+        if proxy_host and proxy_port:
+            try:
+                test_context = await browser.new_context()
+                test_page = await test_context.new_page()
+                await test_page.goto("https://geo.brdtest.com/welcome.txt", timeout=15000)
+                await test_page.close()
+                await test_context.close()
+                logger.info("Proxy test successful at browser launch (HTTP check)")
+                
+                test_context2 = await browser.new_context()
+                test_page2 = await test_context2.new_page()
+                await test_page2.goto("https://www.instagram.com/", timeout=15000)
+                await test_page2.close()
+                await test_context2.close()
+                logger.info("Proxy test successful for Instagram (HTTPS check)")
+            except Exception as e:
+                logger.warning(f"Proxy test failed: {e}")
+                logger.warning("Closing browser and reopening without proxy")
+                await browser.close()
+                
+                launch_kwargs.pop("proxy", None)
+                launch_kwargs.pop("slow_mo", None)
+                browser = await self.playwright.chromium.launch(**launch_kwargs)
+                logger.info("Browser launched without proxy (fallback)")
         context = await browser.new_context(**context_options)
         return context
 

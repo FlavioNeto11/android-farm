@@ -15,7 +15,10 @@ from app.modules.accounts.platforms.instagram.element_detection import (
     is_straight_to_checkpoint,
 )
 from app.modules.accounts.platforms.instagram.human_behavior import HumanBehaviorSimulator
-from app.modules.accounts.platforms.instagram.proxy_config import load_proxy_from_env, get_proxy_url, get_masked_url, validate_proxy_connection
+from app.modules.accounts.platforms.instagram.proxy_config import (
+    load_proxy_from_env, get_proxy_url, get_masked_url, validate_proxy_connection,
+    diagnose_proxy_error, ProxyAuthenticationError, ProxyConnectionError
+)
 
 
 class HybridInstagramFlow:
@@ -47,13 +50,37 @@ class HybridInstagramFlow:
         self.model = os.getenv("VENICE_MODEL", "openai-gpt-4o-2024-11-20")
         self.log = []
         self.proxy_config = load_proxy_from_env()
+        self.using_proxy = False
+        self._setup_system_proxy_if_needed()
+        
         if self.proxy_config:
-            self._log(f"Proxy enabled: {get_masked_url(self.proxy_config)}")
-            if not validate_proxy_connection(self.proxy_config):
-                self._log("WARNING: Proxy validation failed, continuing without proxy")
+            self._log(f"Proxy configured: {get_masked_url(self.proxy_config)}")
+            self._log("Testing proxy connection...")
+            try:
+                validate_proxy_connection(self.proxy_config)
+                self.using_proxy = True
+                self._log("Proxy connection successful - will use proxy for automation")
+            except (ProxyAuthenticationError, ProxyConnectionError) as e:
+                diagnosis = diagnose_proxy_error(e)
+                self._log(f"Proxy validation failed: {diagnosis}")
+                self._log("FALLBACK: Running without proxy. Instagram checkpoint expected.")
                 self.proxy_config = None
+                self.using_proxy = False
         else:
-            self._log("Proxy disabled - running without proxy")
+            self._log("Proxy disabled - running without proxy (checkpoint expected)")
+    
+    def _setup_system_proxy_if_needed(self):
+        if not self.proxy_config:
+            return
+        proxy_url = get_proxy_url(self.proxy_config)
+        current_http = os.environ.get("HTTP_PROXY", "")
+        current_https = os.environ.get("HTTPS_PROXY", "")
+        if proxy_url != current_http or proxy_url != current_https:
+            os.environ["HTTP_PROXY"] = proxy_url
+            os.environ["HTTPS_PROXY"] = proxy_url
+            os.environ["http_proxy"] = proxy_url
+            os.environ["https_proxy"] = proxy_url
+            self._log("System proxy environment variables set")
     
     async def execute_step(self, step_name: str, page, context: Dict) -> Dict:
         action_mode = self.DETERMINISTIC_ACTIONS.get(step_name, "ai")

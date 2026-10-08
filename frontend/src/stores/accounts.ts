@@ -175,7 +175,7 @@ export const useFarmAccountsStore = create<AccountsState>((set, get) => ({
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter((a) =>
-        a.handle.toLowerCase().includes(term) ||
+        (a.handle?.toLowerCase().includes(term)) ||
         a.email?.toLowerCase().includes(term) ||
         a.profile_id.toLowerCase().includes(term)
       );

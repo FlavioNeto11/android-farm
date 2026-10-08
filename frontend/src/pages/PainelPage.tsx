@@ -249,7 +249,7 @@ export function PainelPage() {
                   </Badge>
                   <span className="coin truncate" style={{ flex: 1, fontSize: 'var(--fs-sm)' }}>
                     {account.platform === 'instagram'
-                      ? (account.handle.includes('@') ? `@${account.handle.split('@')[0]}` : `@${account.handle}`)
+                      ? (account.handle ? (account.handle.includes('@') ? `@${account.handle.split('@')[0]}` : `@${account.handle}`) : '(sem handle)')
                       : account.handle}
                   </span>
                   <Badge
