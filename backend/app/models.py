@@ -46,6 +46,7 @@ class Account(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
     error_message = Column(Text, nullable=True)
     proxy_used = Column(String(255), nullable=True)  # IP do proxy usado
+    automation_log = Column(Text, nullable=True)  # JSON string with automation step log
 
     # Relationship
     credential = relationship("Credential", back_populates="account", uselist=False, cascade="all, delete-orphan")

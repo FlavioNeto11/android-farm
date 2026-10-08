@@ -5,8 +5,9 @@ import { Button } from '../components/Button';
 import { Select, TextInput } from '../components/Field';
 import { Banner } from '../components/Banner';
 import { ConfirmDialog } from '../components/ConfirmDialog';
-import { Search, Trash2, LoaderCircle, Mail, Camera, Eye, Copy, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Search, Trash2, LoaderCircle, Mail, Camera, Eye, Copy, ArrowUpDown, ArrowUp, ArrowDown, Trash } from 'lucide-react';
 import { useUIStore } from '../stores/ui';
+import { api } from '../services/api';
 import type { AccountStatus, Platform } from '../types';
 
 type SortBy = 'created_at' | 'handle' | 'platform';
@@ -19,6 +20,8 @@ export function ContasPage() {
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [showCleanup, setShowCleanup] = useState(false);
+  const [cleanupResult, setCleanupResult] = useState<number | null>(null);
 
   useEffect(() => {
     fetchAccounts();
@@ -92,6 +95,16 @@ export function ContasPage() {
   };
 
   const deleteAccountData = accounts.find((a) => a.id === deleteId);
+
+  const handleCleanup = async () => {
+    try {
+      const result = await api.cleanupStuckAccounts(30);
+      setCleanupResult(result.cleaned_count);
+      fetchAccounts();
+    } catch {
+      // ignore
+    }
+  };
 
   if (initialLoad && !accounts.length) {
     return (
@@ -185,7 +198,20 @@ export function ContasPage() {
         <Button variant="ghost" size="sm" onClick={fetchAccounts} loading={loading}>
           Atualizar
         </Button>
+        <Button variant="dangerGhost" size="sm" onClick={() => setShowCleanup(true)} title="Limpar contas presas">
+          <Trash size={14} />
+          Limpar presas
+        </Button>
       </div>
+
+      {cleanupResult !== null && (
+        <Banner tone="success" style={{ marginBottom: 'var(--sp-4)' }}>
+          {cleanupResult} conta(s) presa(s) removida(s).
+          <Button variant="ghost" size="sm" onClick={() => setCleanupResult(null)} style={{ marginLeft: 'auto' }}>
+            Fechar
+          </Button>
+        </Banner>
+      )}
 
       {/* Table */}
       {loading && accounts.length === 0 ? (
@@ -334,6 +360,17 @@ export function ContasPage() {
         destructive
         onConfirm={() => { if (deleteId) deleteAccount(deleteId); }}
         onCancel={() => setDeleteId(null)}
+      />
+
+      <ConfirmDialog
+        open={showCleanup}
+        title="Limpar contas presas"
+        description="Marcar contas em 'creating' há mais de 30 minutos como 'failed'. Esta ação não pode ser desfeita."
+        confirmLabel="Limpar"
+        cancelLabel="Cancelar"
+        destructive
+        onConfirm={handleCleanup}
+        onCancel={() => setShowCleanup(false)}
       />
     </div>
   );

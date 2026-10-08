@@ -9,7 +9,7 @@ import { Banner } from '../components/Banner';
 import { EvidenceViewer } from '../components/EvidenceViewer';
 import { Skeleton } from '../components/Skeleton';
 import { ConfirmDialog } from '../components/ConfirmDialog';
-import { ArrowLeft, Mail, Camera, LoaderCircle, Trash2, RefreshCw, Copy } from 'lucide-react';
+import { ArrowLeft, Mail, Camera, LoaderCircle, Trash2, RefreshCw, Copy, Clock } from 'lucide-react';
 import type { Account, CredentialResponse, Evidence } from '../types';
 
 export function ContaDetailPage() {
@@ -18,6 +18,7 @@ export function ContaDetailPage() {
   const [account, setAccount] = useState<Account | null>(null);
   const [credentials, setCredentials] = useState<CredentialResponse | null>(null);
   const [evidence, setEvidence] = useState<Evidence[]>([]);
+  const [automationLog, setAutomationLog] = useState<Array<{timestamp: string; message: string}>>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -36,13 +37,15 @@ export function ContaDetailPage() {
         const acc = accounts.find((a) => a.id === selectedAccountId);
         if (acc) setAccount(acc);
 
-        const [credData, evData] = await Promise.allSettled([
+        const [credData, evData, logData] = await Promise.allSettled([
           api.getCredentials(selectedAccountId),
           api.getEvidence(selectedAccountId),
+          api.getAutomationLog(selectedAccountId),
         ]);
 
         if (credData.status === 'fulfilled') setCredentials(credData.value);
         if (evData.status === 'fulfilled') setEvidence(evData.value);
+        if (logData.status === 'fulfilled' && logData.value.log) setAutomationLog(logData.value.log);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load details');
       } finally {
@@ -227,6 +230,39 @@ export function ContaDetailPage() {
                     )}
                   </div>
                 ))}
+              </CardBody>
+            </Card>
+          )}
+
+          {/* Automation Log */}
+          {automationLog.length > 0 && (
+            <Card>
+              <CardBody>
+                <h2 className="t-titulo-secao" style={{ marginBottom: 'var(--sp-4)' }}>
+                  <Clock size={16} style={{ marginRight: 'var(--sp-2)' }} />
+                  Log de Automação
+                </h2>
+                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                  {automationLog.map((entry, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        display: 'flex',
+                        gap: 'var(--sp-3)',
+                        padding: 'var(--sp-2) 0',
+                        borderBottom: i < automationLog.length - 1 ? '1px solid var(--border-2)' : 'none',
+                        fontSize: 'var(--fs-sm)',
+                      }}
+                    >
+                      <span style={{ fontSize: 'var(--fs-2xs)', color: 'var(--text-3)', minWidth: '60px' }}>
+                        {new Date(entry.timestamp).toLocaleTimeString('pt-BR')}
+                      </span>
+                      <span style={{ color: entry.message.includes('Erro') || entry.message.includes('Falha') ? 'var(--danger-text)' : entry.message.includes('warning') || entry.message.includes('Aviso') ? 'var(--warning-text)' : 'var(--text-1)' }}>
+                        {entry.message}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </CardBody>
             </Card>
           )}

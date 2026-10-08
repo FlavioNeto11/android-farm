@@ -4,6 +4,12 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import os
+import sys
+import asyncio
+
+# Fix Playwright subprocess on Windows Python 3.13
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
 # Setup system proxy before any other imports if configured
 if os.getenv("PROXY_ENABLED") == "true" and os.getenv("PROXY_AUTO_SETUP") == "true":

@@ -20,8 +20,6 @@ interface Persona {
   traits?: any;
 }
 
-const ANDROID_API_URL = import.meta.env.VITE_ANDROID_API_URL || 'http://127.0.0.1:8000';
-
 export function PersonaDetailPage() {
   const { navigate, selectedAccountId } = useUIStore();
   const [persona, setPersona] = useState<Persona | null>(null);
@@ -36,11 +34,7 @@ export function PersonaDetailPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${ANDROID_API_URL}/api/personas/${personaId}`);
-      if (!response.ok) {
-        throw new Error('Persona not found');
-      }
-      const data = await response.json();
+      const data = await api.getPersona(personaId);
       setPersona(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar persona');

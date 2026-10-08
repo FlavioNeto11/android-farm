@@ -86,7 +86,19 @@ export function CriarContaPage() {
     setSuccess(null);
 
     try {
-      if (platforms.includes('instagram')) {
+      if (platforms.includes('instagram') && platforms.length === 1) {
+        const result = await api.createAccountAI({
+          platform: 'instagram',
+          use_proxy: proxyStats.active > 0,
+          proxy_session_id: `session_${Date.now()}`,
+          first_name: firstName,
+          last_name: lastName,
+          birth_date: birthDate,
+          gender,
+        });
+        setSuccess({ account_id: result.account_id, platform: result.platform });
+        setTimeout(() => navigate('progress', result.account_id), 1500);
+      } else if (platforms.includes('instagram') && platforms.includes('outlook')) {
         const result = await api.createAccountAI({
           platform: 'instagram',
           use_proxy: proxyStats.active > 0,

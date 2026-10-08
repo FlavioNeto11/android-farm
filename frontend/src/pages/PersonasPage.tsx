@@ -4,7 +4,7 @@ import { api } from '../services/api';
 import { Button } from '../components/Button';
 import { Card, CardBody } from '../components/Card';
 import { Banner } from '../components/Banner';
-import { Contact, RefreshCw, Camera, LoaderCircle, AlertCircle, Eye } from 'lucide-react';
+import { Contact, RefreshCw, Camera, LoaderCircle, AlertCircle, Eye, CheckCircle } from 'lucide-react';
 
 interface Persona {
   id: string;
@@ -16,9 +16,8 @@ interface Persona {
   birth_date?: string;
   gender?: string;
   summary?: string;
+  accounts_count?: number;
 }
-
-const ANDROID_API_URL = import.meta.env.VITE_ANDROID_API_URL || 'http://127.0.0.1:8000';
 
 export function PersonasPage() {
   const { navigate } = useUIStore();
@@ -31,11 +30,7 @@ export function PersonasPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${ANDROID_API_URL}/api/personas`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch personas from android API');
-      }
-      const data = await response.json();
+      const data = await api.listPersonas();
       setPersonas(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar personas');
@@ -100,78 +95,90 @@ export function PersonasPage() {
         </Card>
       ) : (
         <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
-          {personas.map((persona) => (
-            <Card key={persona.id}>
-              <CardBody>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--sp-4)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-4)' }}>
-                    <div
-                      style={{
-                        width: '48px',
-                        height: '48px',
-                        borderRadius: '50%',
-                        background: 'var(--surface-3)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <Contact size={24} style={{ color: 'var(--text-3)' }} />
-                    </div>
-                    <div>
-                      <h3 style={{ fontWeight: 'var(--fw-semibold)', color: 'var(--text-1)' }}>
-                        {persona.display_name || `${persona.first_name} ${persona.last_name}`}
-                      </h3>
-                      <p className="t-legenda">
-                        {persona.first_name} {persona.last_name}
-                        {persona.birth_date && ` · ${persona.birth_date}`}
-                      </p>
-                      <span
+          {personas.map((persona) => {
+            const hasAccount = (persona.accounts_count ?? 0) > 0;
+            return (
+              <Card key={persona.id}>
+                <CardBody>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--sp-4)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-4)' }}>
+                      <div
                         style={{
-                          fontSize: 'var(--fs-xs)',
-                          padding: '2px var(--sp-2)',
-                          borderRadius: 'var(--radius-sm)',
-                          background: persona.status === 'active' ? 'var(--success-soft)' : 'var(--surface-3)',
-                          color: persona.status === 'active' ? 'var(--success-text)' : 'var(--text-2)',
+                          width: '48px',
+                          height: '48px',
+                          borderRadius: '50%',
+                          background: 'var(--surface-3)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
                         }}
                       >
-                        {persona.status}
-                      </span>
+                        <Contact size={24} style={{ color: 'var(--text-3)' }} />
+                      </div>
+                      <div>
+                        <h3 style={{ fontWeight: 'var(--fw-semibold)', color: 'var(--text-1)' }}>
+                          {persona.display_name || `${persona.first_name} ${persona.last_name}`}
+                        </h3>
+                        <p className="t-legenda">
+                          {persona.first_name} {persona.last_name}
+                          {persona.birth_date && ` · ${persona.birth_date}`}
+                        </p>
+                        <span
+                          style={{
+                            fontSize: 'var(--fs-xs)',
+                            padding: '2px var(--sp-2)',
+                            borderRadius: 'var(--radius-sm)',
+                            background: persona.status === 'active' ? 'var(--success-soft)' : 'var(--surface-3)',
+                            color: persona.status === 'active' ? 'var(--success-text)' : 'var(--text-2)',
+                          }}
+                        >
+                          {persona.status}
+                        </span>
+                      </div>
                     </div>
-                  </div>
 
-                  <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => navigate('persona-detail', persona.id)}
-                    >
-                      <Eye size={14} />
-                      Detalhes
-                    </Button>
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() => createInstagram(persona.id)}
-                      disabled={creating === persona.id}
-                    >
-                      {creating === persona.id ? (
-                        <>
-                          <LoaderCircle size={14} className="spin" />
-                          Criando...
-                        </>
+                    <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'center' }}>
+                      {hasAccount ? (
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-2)', color: 'var(--success-text)', fontSize: 'var(--fs-sm)' }}>
+                          <CheckCircle size={16} />
+                          Conta criada
+                        </span>
                       ) : (
                         <>
-                          <Camera size={14} />
-                          Criar Instagram
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate('persona-detail', persona.id)}
+                          >
+                            <Eye size={14} />
+                            Detalhes
+                          </Button>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => createInstagram(persona.id)}
+                            disabled={creating === persona.id}
+                          >
+                            {creating === persona.id ? (
+                              <>
+                                <LoaderCircle size={14} className="spin" />
+                                Criando...
+                              </>
+                            ) : (
+                              <>
+                                <Camera size={14} />
+                                Criar Instagram
+                              </>
+                            )}
+                          </Button>
                         </>
                       )}
-                    </Button>
+                    </div>
                   </div>
-                </div>
-              </CardBody>
-            </Card>
-          ))}
+                </CardBody>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>

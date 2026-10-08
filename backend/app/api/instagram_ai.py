@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 from typing import Optional
 import asyncio
+import json
 import logging
 import os
 
@@ -38,6 +39,8 @@ async def create_account_ai(req: CreateAccountAIRequest):
             db.commit()
             db.refresh(account)
 
+            account_id_str = str(account.id)
+
             async def run_instagram_automation():
                 import random
                 from app.modules.accounts.platforms.instagram.hybrid_flow import HybridInstagramFlow
@@ -59,7 +62,7 @@ async def create_account_ai(req: CreateAccountAIRequest):
                 password = f"{first.capitalize()}{last.capitalize()}{number}!"
 
                 await manager.broadcast({
-                    "account_id": str(account.id),
+                    "account_id": account_id_str,
                     "type": "step_executed",
                     "detail": f"Iniciando criação da conta para {first} {last}",
                     "timestamp": __import__('datetime').datetime.utcnow().isoformat()
@@ -97,7 +100,7 @@ async def create_account_ai(req: CreateAccountAIRequest):
                     context_kwargs["proxy_username"] = proxy_config.username
                     context_kwargs["proxy_password"] = proxy_config.password
                     await manager.broadcast({
-                        "account_id": str(account.id),
+                        "account_id": account_id_str,
                         "type": "step_completed",
                         "detail": f"Proxy configurado: {proxy_config.host}:{proxy_config.port}",
                         "timestamp": __import__('datetime').datetime.utcnow().isoformat()
@@ -111,7 +114,7 @@ async def create_account_ai(req: CreateAccountAIRequest):
 
                 try:
                     await manager.broadcast({
-                        "account_id": str(account.id),
+                        "account_id": account_id_str,
                         "type": "step_executed",
                         "detail": "Navegando para Instagram signup...",
                         "timestamp": __import__('datetime').datetime.utcnow().isoformat()
@@ -120,13 +123,13 @@ async def create_account_ai(req: CreateAccountAIRequest):
                     await page.goto("https://www.instagram.com/accounts/emailsignup/", wait_until="domcontentloaded", timeout=60000)
 
                     await manager.broadcast({
-                        "account_id": str(account.id),
+                        "account_id": account_id_str,
                         "type": "step_completed",
                         "detail": "Página de signup carregada",
                         "timestamp": __import__('datetime').datetime.utcnow().isoformat()
                     })
 
-                    flow = HybridInstagramFlow()
+                    flow = HybridInstagramFlow(account_id=account_id_str)
                     flow_context = {
                         "email": email,
                         "password": password,
@@ -136,7 +139,7 @@ async def create_account_ai(req: CreateAccountAIRequest):
                     }
 
                     await manager.broadcast({
-                        "account_id": str(account.id),
+                        "account_id": account_id_str,
                         "type": "step_executed",
                         "detail": "Executando fluxo de criação...",
                         "timestamp": __import__('datetime').datetime.utcnow().isoformat()
@@ -147,23 +150,26 @@ async def create_account_ai(req: CreateAccountAIRequest):
                         timeout=600
                     )
 
+                    automation_log = json.dumps(result.get("log", []))
+
                     with get_db_context() as db2:
                         acc = db2.query(Account).filter(Account.id == account.id).first()
                         if acc:
+                            acc.automation_log = automation_log
                             if result.get("success"):
                                 acc.handle = result.get("handle", email)
                                 acc.status = AccountStatus.ready
                                 await manager.broadcast({
-                                    "account_id": str(account.id),
+                                    "account_id": account_id_str,
                                     "type": "complete",
-                                    "detail": "Conta criada com sucesso!",
+                                    "detail": f"Conta criada com sucesso! @{result.get('handle', 'handle não capturado')}",
                                     "timestamp": __import__('datetime').datetime.utcnow().isoformat()
                                 })
                             else:
                                 acc.status = AccountStatus.failed
                                 acc.error_message = result.get("error", "Hybrid automation failed")
                                 await manager.broadcast({
-                                    "account_id": str(account.id),
+                                    "account_id": account_id_str,
                                     "type": "error",
                                     "detail": f"Falha: {acc.error_message}",
                                     "timestamp": __import__('datetime').datetime.utcnow().isoformat()
@@ -178,7 +184,7 @@ async def create_account_ai(req: CreateAccountAIRequest):
                             acc.error_message = "Timeout na automação (10 minutos)"
                             db2.commit()
                     await manager.broadcast({
-                        "account_id": str(account.id),
+                        "account_id": account_id_str,
                         "type": "error",
                         "detail": "Timeout na automação",
                         "timestamp": __import__('datetime').datetime.utcnow().isoformat()
@@ -195,7 +201,7 @@ async def create_account_ai(req: CreateAccountAIRequest):
                             acc.error_message = error_detail
                             db2.commit()
                     await manager.broadcast({
-                        "account_id": str(account.id),
+                        "account_id": account_id_str,
                         "type": "error",
                         "detail": error_detail,
                         "timestamp": __import__('datetime').datetime.utcnow().isoformat()
@@ -207,7 +213,7 @@ async def create_account_ai(req: CreateAccountAIRequest):
             asyncio.create_task(run_instagram_automation())
 
             return {
-                "account_id": str(account.id),
+                "account_id": account_id_str,
                 "platform": "instagram",
                 "status": "creating",
                 "message": "AI automation started"

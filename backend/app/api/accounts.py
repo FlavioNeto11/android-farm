@@ -4,8 +4,10 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import asyncio
+import json
 import logging
 import os
+from datetime import datetime, timedelta
 
 from app.db import get_db_context
 from app.modules.accounts.application.account_service import get_account_service
@@ -48,6 +50,9 @@ async def request_account_creation(request: AccountCreationRequest):
                     from app.modules.accounts.platforms.instagram.human_behavior import HumanBehaviorSimulator
                     from app.modules.accounts.platforms.instagram.proxy_config import load_proxy_from_env, ProxyConfig
                     from app.modules.browsers.domain.browser_profile import get_browser_manager
+                    from app.api.websocket_manager import manager
+                    
+                    acct_id_str = str(account.id)
                     
                     first_names = ["maria", "joao", "ana", "pedro", "carla", "lucas", "julia", "gabriel", "rafael", "camila"]
                     last_names = ["silva", "santos", "oliveira", "pereira", "costa", "ferreira", "almeida", "rocha"]
@@ -60,6 +65,13 @@ async def request_account_creation(request: AccountCreationRequest):
                     domain = random.choice(domains)
                     realistic_email = f"{first}.{last}{number}@{domain}"
                     realistic_password = f"{first.capitalize()}{last.capitalize()}{number}!"
+                    
+                    await manager.broadcast({
+                        "account_id": acct_id_str,
+                        "type": "step_started",
+                        "detail": f"Iniciando criação da conta para {first} {last}",
+                        "timestamp": datetime.utcnow().isoformat()
+                    })
                     
                     browser_manager = get_browser_manager()
                     viewport = HumanBehaviorSimulator.get_random_viewport()
@@ -88,6 +100,12 @@ async def request_account_creation(request: AccountCreationRequest):
                         context_kwargs["proxy_port"] = proxy_config.port
                         context_kwargs["proxy_username"] = proxy_config.username
                         context_kwargs["proxy_password"] = proxy_config.password
+                        await manager.broadcast({
+                            "account_id": acct_id_str,
+                            "type": "step_completed",
+                            "detail": f"Proxy configurado: {proxy_config.host}:{proxy_config.port}",
+                            "timestamp": datetime.utcnow().isoformat()
+                        })
                     
                     context = await browser_manager.create_context(**context_kwargs)
                     page = await context.new_page()
@@ -96,14 +114,23 @@ async def request_account_creation(request: AccountCreationRequest):
                     await page.set_extra_http_headers({"User-Agent": user_agent})
                     
                     try:
-                        flow = HybridInstagramFlow()
+                        await manager.broadcast({
+                            "account_id": acct_id_str,
+                            "type": "step_executed",
+                            "detail": "Navegando para Instagram signup...",
+                            "timestamp": datetime.utcnow().isoformat()
+                        })
                         
                         await page.goto("https://www.instagram.com/accounts/emailsignup/", wait_until="domcontentloaded", timeout=60000)
-                        await flow._broadcast("navigating", "Indo para página de signup do Instagram")
                         
-                        timeout_ms = 60000 if flow.using_proxy else 30000
-                        await page.goto("https://www.instagram.com/accounts/emailsignup/", wait_until="domcontentloaded", timeout=timeout_ms)
-                        await flow._broadcast("navigating", "Indo para página de signup do Instagram")
+                        await manager.broadcast({
+                            "account_id": acct_id_str,
+                            "type": "step_completed",
+                            "detail": "Página de signup carregada",
+                            "timestamp": datetime.utcnow().isoformat()
+                        })
+                        
+                        flow = HybridInstagramFlow(account_id=acct_id_str)
                         
                         flow_context = {
                             "email": realistic_email,
@@ -118,15 +145,30 @@ async def request_account_creation(request: AccountCreationRequest):
                             timeout=600
                         )
                         
+                        automation_log = json.dumps(result.get("log", []))
+                        
                         with get_db_context() as db2:
                             acc = db2.query(Account).filter(Account.id == account.id).first()
                             if acc:
+                                acc.automation_log = automation_log
                                 if result["success"]:
                                     acc.handle = result.get("handle", realistic_email)
                                     acc.status = AccountStatus.ready
+                                    await manager.broadcast({
+                                        "account_id": acct_id_str,
+                                        "type": "complete",
+                                        "detail": f"Conta criada com sucesso! @{result.get('handle', 'handle não capturado')}",
+                                        "timestamp": datetime.utcnow().isoformat()
+                                    })
                                 else:
                                     acc.status = AccountStatus.failed
                                     acc.error_message = result.get("error", "Hybrid automation failed")
+                                    await manager.broadcast({
+                                        "account_id": acct_id_str,
+                                        "type": "error",
+                                        "detail": f"Falha: {acc.error_message}",
+                                        "timestamp": datetime.utcnow().isoformat()
+                                    })
                                 db2.commit()
                     
                     except asyncio.TimeoutError:
@@ -136,6 +178,12 @@ async def request_account_creation(request: AccountCreationRequest):
                                 acc.status = AccountStatus.failed
                                 acc.error_message = "Automação interrompida por timeout (10 minutos)"
                                 db2.commit()
+                        await manager.broadcast({
+                            "account_id": acct_id_str,
+                            "type": "error",
+                            "detail": "Timeout na automação",
+                            "timestamp": datetime.utcnow().isoformat()
+                        })
                     
                     except Exception as e:
                         import traceback
@@ -147,6 +195,12 @@ async def request_account_creation(request: AccountCreationRequest):
                                 acc.status = AccountStatus.failed
                                 acc.error_message = error_detail
                                 db2.commit()
+                        await manager.broadcast({
+                            "account_id": acct_id_str,
+                            "type": "error",
+                            "detail": error_detail,
+                            "timestamp": datetime.utcnow().isoformat()
+                        })
                     
                     finally:
                         await context.close()
@@ -340,3 +394,59 @@ async def get_account_evidence(account_id: str):
                 })
 
     return evidence_files
+
+
+@router.get("/{account_id}/automation-log")
+async def get_account_automation_log(account_id: str):
+    """Retorna log de automação de uma conta"""
+    with get_db_context() as db:
+        account = db.query(Account).filter(Account.id == account_id).first()
+        if not account:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account not found")
+
+        automation_log = []
+        if account.automation_log:
+            try:
+                automation_log = json.loads(account.automation_log)
+            except json.JSONDecodeError:
+                automation_log = []
+
+        return {
+            "account_id": account_id,
+            "status": account.status.value if hasattr(account.status, 'value') else account.status,
+            "handle": account.handle,
+            "error_message": account.error_message,
+            "log": automation_log,
+            "created_at": account.created_at.isoformat() if account.created_at else None,
+            "updated_at": account.updated_at.isoformat() if account.updated_at else None,
+        }
+
+
+@router.post("/cleanup-stuck")
+async def cleanup_stuck_accounts(minutes_threshold: int = 30):
+    """Marca contas stuck em 'creating' há mais de X minutos como 'failed'"""
+    with get_db_context() as db:
+        threshold = datetime.utcnow() - timedelta(minutes=minutes_threshold)
+        stuck_accounts = db.query(Account).filter(
+            Account.status == AccountStatus.creating,
+            Account.created_at < threshold
+        ).all()
+
+        cleaned = []
+        for acc in stuck_accounts:
+            acc.status = AccountStatus.failed
+            acc.error_message = f"Stuck - timeout não detectado após {minutes_threshold} minutos"
+            cleaned.append({
+                "account_id": acc.id,
+                "platform": acc.platform,
+                "profile_id": acc.profile_id,
+                "created_at": acc.created_at.isoformat() if acc.created_at else None,
+            })
+
+        db.commit()
+
+        return {
+            "cleaned_count": len(cleaned),
+            "minutes_threshold": minutes_threshold,
+            "accounts": cleaned,
+        }

@@ -95,4 +95,17 @@ export const api = {
       `/personas/${id}/create-account`,
       { method: 'POST' },
     ),
+
+  // Automation log
+  getAutomationLog: (id: string) =>
+    request<{ account_id: string; status: string; handle: string | null; error_message: string | null; log: Array<{timestamp: string; message: string}>; created_at: string; updated_at: string }>(
+      `/accounts/${id}/automation-log`,
+    ),
+
+  // Cleanup stuck accounts
+  cleanupStuckAccounts: (minutes?: number) =>
+    request<{ cleaned_count: number; minutes_threshold: number; accounts: Array<{account_id: string; platform: string; profile_id: string; created_at: string}> }>(
+      `/accounts/cleanup-stuck${minutes ? `?minutes_threshold=${minutes}` : ''}`,
+      { method: 'POST' },
+    ),
 };
