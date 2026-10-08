@@ -1,8 +1,20 @@
-import re
 import logging
-from typing import List
+import re
 
 logger = logging.getLogger(__name__)
+
+_SECRET_ASSIGNMENT = re.compile(
+    r"(?i)(?P<name>\b(?:password|passwd|pwd|token|api[_-]?key|secret|authorization)\b)"
+    r"(?P<separator>\s*[:=]\s*)(?P<bearer>Bearer\s+)?"
+    r'(?P<value>"[^"]*"|\'[^\']*\'|[^\s,;&]+)'
+)
+_EMAIL_CREDENTIAL = re.compile(
+    r"(?i)(?P<email>[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}):(?P<password>[^\s,;&]+)"
+)
+
+
+def _is_redacted(value: str) -> bool:
+    return value.strip("\"'").lower() in {"[redacted]", "******"}
 
 
 def looks_secret(text: str) -> bool:
@@ -10,16 +22,11 @@ def looks_secret(text: str) -> bool:
     if not text or not isinstance(text, str):
         return False
 
-    # Formato comum: username:password, email:password, etc.
-    secret_patterns = [
-        r"\w+:\s*\w+\s*\$",  # username: password$
-        r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}:\s*\w+\s*\$",  # email: password$
-        r"password=\S*",  # password= xxxx
-        r"token=\S*",  # token= asdasd
-    ]
-
-    text_lower = text.lower()
-    return any(pattern.lower() in text_lower for pattern in secret_patterns)
+    assignments = _SECRET_ASSIGNMENT.finditer(text)
+    credentials = _EMAIL_CREDENTIAL.finditer(text)
+    return any(not _is_redacted(match.group("value")) for match in assignments) or any(
+        not _is_redacted(match.group("password")) for match in credentials
+    )
 
 
 def redact(text: str, keep_revealed: bool = False) -> str:
@@ -36,11 +43,12 @@ def redact(text: str, keep_revealed: bool = False) -> str:
     if not text or not isinstance(text, str):
         return text
 
-    # Returns "Contador 3" or similar. Prompt: "How to treat same secret()"?
-    pass  # Return signature only if they want self-reference
+    def redact_assignment(match: re.Match) -> str:
+        value = "******" if match.group("bearer") else "[REDACTED]"
+        return f"{match.group('name')}{match.group('separator')}{value}"
 
-    # Não implementado ainda - pode ser expandido conforme necessidade
-    return text
+    text = _SECRET_ASSIGNMENT.sub(redact_assignment, text)
+    return _EMAIL_CREDENTIAL.sub(r"\g<email>:[REDACTED]", text)
 
 
 def secrets_similarity(text1: str, text2: str) -> bool:
